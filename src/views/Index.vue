@@ -27,13 +27,21 @@ const generateItems = (items?: any[]): any[] => {
   ));
 };
 
-console.log('menus', menus);
-console.log('menus', menus?.result);
+// console.log('menus', menus);
+// console.log('menus', menus?.result);
 const items = ref(generateItems(menus?.result as any));
-console.log('items', items);
+const defaultPage = '/dashboard/analysis';
+// 默认添加一个选项卡
+tabs.value.push({
+  key: defaultPage,
+  tab: '分析页'
+});
+router.push(defaultPage);
+activeKey.value = defaultPage;
+// console.log('items', items);
 
 const handleTabChange = (tab: any) => {
-  console.log('tab', tab);
+  // console.log('tab', tab);
   router.push(tab);
 }
 const logout = () => {
@@ -43,18 +51,18 @@ const logout = () => {
 }
 
 const handleMenuItem = (item: any) => {
-  console.log('handleMenuItem', item, tabs.value);
+  // console.log('handleMenuItem', item, tabs.value);
   // 路由跳转
   router.push(item.item.path);
   //
   let find = false;
   tabs.value.forEach((tab: any) => {
     if (tab.key == item.item.path) {
-      console.log('find item', tab.key, item.item.key);
+      // console.log('find item', tab.key, item.item.key);
       find = true;
     }
   });
-  console.log('find', find);
+  // console.log('find', find);
   if (!find) {
     tabs.value.push({
       key: item.item.path,
@@ -62,7 +70,7 @@ const handleMenuItem = (item: any) => {
     });
   }
   activeKey.value = item.item.path;
-  console.log('item.item.path activeKey', item.item.path);
+  // console.log('item.item.path activeKey', item.item.path);
   // 路由跳转
   router.push(item.item.path);
 }
