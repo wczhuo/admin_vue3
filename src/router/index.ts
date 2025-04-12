@@ -1,10 +1,11 @@
 // src/router/index.ts
 import {createRouter, createWebHistory, type RouteRecordRaw} from 'vue-router'
 import {getAllMenusApi} from "@/api/core/menu.ts";
+import {isLogin} from "@/api/core/auth.ts";
 // import HomeView from '@/views/HomeView.vue'
 let menus: any;
 try {
-    if(localStorage.getItem('token')){
+    if(isLogin()){
         menus = await getAllMenusApi();
         console.log('menus', menus);
     }

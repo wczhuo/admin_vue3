@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import {ref} from 'vue';
 import {Menu, Tabs, TabPane, Button} from 'ant-design-vue';
-
-
 import type {MenuTheme} from 'ant-design-vue';
-// import {getAllMenusApi} from "@/api/core/menu.ts";
 import router from "@/router";
 import {menus} from "@/router";
 
@@ -35,7 +32,7 @@ console.log('menus', menus?.result);
 const items = ref(generateItems(menus?.result as any));
 console.log('items', items);
 
-const handleTabChange = (tab: string) => {
+const handleTabChange = (tab: any) => {
   console.log('tab', tab);
   router.push(tab);
 }
@@ -74,26 +71,37 @@ const handleMenuItem = (item: any) => {
 <template>
   <div class="index-container flex-row">
     <div class="left-sidebar flex-column">
-      <Menu
-          v-model:openKeys="openKeys"
-          v-model:selectedKeys="selectedKeys"
-          style="width: 100%;"
-          mode="inline"
-          :theme="theme"
-          :items="items"
-          @click="handleMenuItem"
-      />
+      <div class="header">
+        公司logo
+        公司名称
+      </div>
+      <div class="menu">
+        <Menu
+            v-model:openKeys="openKeys"
+            v-model:selectedKeys="selectedKeys"
+            style="width: 100%;"
+            mode="inline"
+            :theme="theme"
+            :items="items"
+            @click="handleMenuItem"
+        />
+      </div>
     </div>
     <div class="right-container flex-column">
       <div class="header">
+        用户信息 门店信息
         <Button @click="logout">退出登录</Button>
       </div>
       <div class="content">
-        <Tabs @change="handleTabChange" v-model:activeKey="activeKey">
-          <TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
-          </TabPane>
-        </Tabs>
-        <router-view/>
+        <div class="tab-box">
+          <Tabs @change="handleTabChange" v-model:activeKey="activeKey">
+            <TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
+            </TabPane>
+          </Tabs>
+        </div>
+        <div class="router-view">
+          <router-view/>
+        </div>
       </div>
     </div>
   </div>
@@ -122,10 +130,19 @@ const handleMenuItem = (item: any) => {
 
 .left-sidebar {
   width: 300px;
-  height: calc(100vh - 120px);
+  height: 100vh;
   overflow-y: auto;
   scrollbar-gutter: stable;
   scrollbar-color: #000B16 #001427;
+  background-color: #001427;
+
+  .header {
+    height: 120px;
+  }
+
+  .menu {
+    height: calc(100vh - 120px);
+  }
 
   .ant-menu-sub {
     background: transparent !important;
