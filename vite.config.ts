@@ -18,5 +18,13 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'), // 精确指向 src 目录
       '#': path.resolve(__dirname, './src'), // 精确指向 src 目录
     }
+  },
+
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // additionalData: `@import "@/assets/scss/global.scss";` // 全局注入，无效
+      }
+    }
   }
 })

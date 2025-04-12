@@ -3,10 +3,13 @@ import {useTemplateRef, ref} from 'vue';
 import {Form, FormItem, Input, Button, message, Spin} from 'ant-design-vue';
 import {loginApi} from "@/api/core/auth.ts";
 import router from "@/router";
+import SlideVerify from "@/components/SlideVerify.vue";
 
 const formLogin: any = useTemplateRef('formLogin');
 
 const loading = ref(false);
+const verifySuccess = ref(import.meta.env.DEV);
+const verifyWarning = ref(false);
 
 // 验证规则配置
 const rules: any = {
@@ -34,6 +37,10 @@ const formState = ref({
 const handleLogin = async () => {
 // 手动触发表单验证
   await formLogin?.value.validate();
+  if (!verifySuccess.value) {
+    verifyWarning.value = true;
+    return;
+  }
   loading.value = true;
   // message.success('验证通过');
   const result: any = await loginApi(formState.value);
@@ -44,35 +51,66 @@ const handleLogin = async () => {
     // 保存token和用户信息
     localStorage.setItem('token', result?.result?.token);
     localStorage.setItem('userInfo', JSON.stringify(result?.result));
-    router.push('/index');
+    router.push('/');
+    // router.push('/index');
   } else {
-    message.error(result?.result.error);
+    message.error(result?.message);
   }
+}
+
+const slideVerifySuccess = () => {
+  verifySuccess.value = true;
 }
 </script>
 
 <template>
   <Spin :spinning="loading">
-    <Form ref="formLogin" class="login-form" :model="formState" :rules="rules" @finish="handleLogin">
-      <FormItem label="用户名" name="username" colon>
-        <Input v-model:value="formState.username"/>
-      </FormItem>
+    <div class="login-container">
+      <Form ref="formLogin" class="login-form flex-column" :model="formState" :rules="rules" @finish="handleLogin">
+        <FormItem name="username" class="row">
+          <Input class="input" v-model:value="formState.username" placeholder="用户名"/>
+        </FormItem>
 
-      <FormItem label="密码" name="password" colon>
-        <Input.Password v-model:value="formState.password"/>
-      </FormItem>
+        <FormItem name="password" class="row">
+          <Input.Password class="input" v-model:value="formState.password" placeholder="密码"/>
+        </FormItem>
 
-      <FormItem label="验证码" name="captcha" colon>
-        <Input v-model:value="formState.captcha"/>
-      </FormItem>
+        <FormItem name="captcha" class="row">
+          <!--        <Input v-model:value="formState.captcha" placeholder="验证码"/>-->
+          <SlideVerify class="slide-verify" :warning="verifyWarning" :on-success="slideVerifySuccess"></SlideVerify>
+        </FormItem>
 
-      <FormItem>
-        <Button type="primary" html-type="submit">登录</Button>
-      </FormItem>
-    </Form>
+        <FormItem class="action-box mt-40">
+          <Button type="primary" html-type="submit" class="btn-login">登录</Button>
+        </FormItem>
+      </Form>
+    </div>
   </Spin>
 </template>
 
 <style scoped>
+.login-container {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  justify-items: center;
+  align-content: center;
+  .login-form {
+    width: 300px;
 
+    .row {
+      height: 40px;
+      line-height: 40px;
+
+      .input {
+        height: 40px;
+        line-height: 40px;
+      }
+    }
+
+    .btn-login {
+      width: 100%;
+    }
+  }
+}
 </style>

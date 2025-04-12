@@ -1,33 +1,85 @@
 // src/router/index.ts
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import {createRouter, createWebHistory, type RouteRecordRaw} from 'vue-router'
+import {getAllMenusApi} from "@/api/core/menu.ts";
 // import HomeView from '@/views/HomeView.vue'
+let menus: any;
+try {
+    if(localStorage.getItem('token')){
+        menus = await getAllMenusApi();
+        console.log('menus', menus);
+    }
+} catch (e) {
+
+}
+
+export {menus};
+
+let modules = import.meta.glob('../views/**/**/*.vue');
+// console.log('modules', modules);
+
+const getViews = (item: any) => {
+    return modules[item.component == 'LAYOUT' ? `../views/Index.vue` : `../views${item.component}.vue`];
+}
+let routesApi: any[] = [];
+
+const generateItems = (items?: any[]): any[] => {
+    if (!items) return [];
+
+    return items.map((item) => {
+        if (item.component !== 'LAYOUT') {
+            routesApi.push({
+                path: item.path.substring(0, 1) == '/' ? item.path.substring(1) : item.path,
+                name: item?.name,
+                component: getViews(item), // 懒加载
+                // children: item?.children?.length > 0 ? generateItems(item.children) : undefined
+            });
+        }
+        if (item?.children?.length > 0) {
+            generateItems(item.children);
+        }
+    });
+};
+if (menus?.result) {
+    generateItems(menus.result);
+}
+
 
 // 定义路由类型增强安全性
 const routes: Array<RouteRecordRaw> = [
-    {
-        path: '/home',
-        name: 'home',
-        component: () => import('@/views/HomeView.vue'), // 懒加载
-        meta: { requiresAuth: true } // 添加路由元信息
-    },
-    {
-        path: '/about',
-        name: 'about',
-        component: () => import('@/views/AboutView.vue'), // 懒加载
-        meta: { requiresAuth: true } // 添加路由元信息
-    },
     {
         path: '/login',
         name: 'login',
         component: () => import('@/views/Login.vue') // 懒加载
     },
     {
-        path: '/index',
-        name: 'about',
+        path: '/',
+        name: '',
         component: () => import('@/views/Index.vue'), // 懒加载
-        meta: { requiresAuth: true } // 添加路由元信息
+        meta: {requiresAuth: true}, // 添加路由元信息
+        children: [
+            ...routesApi,
+            {
+                path: 'home',
+                name: 'home',
+                component: () => import('@/views/HomeView.vue'), // 懒加载
+                meta: {requiresAuth: true} // 添加路由元信息
+            },
+            {
+                path: '/about',
+                name: 'about',
+                component: () => import('@/views/AboutView.vue'), // 懒加载
+                meta: {requiresAuth: true} // 添加路由元信息
+            },
+            {
+                path: '/index',
+                name: 'index',
+                component: () => import('@/views/Index.vue'), // 懒加载
+                meta: {requiresAuth: true} // 添加路由元信息
+            },
+        ],
     }
 ]
+console.log('routes', routes);
 
 const router = createRouter({
     history: createWebHistory(),

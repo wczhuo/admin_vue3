@@ -4,7 +4,7 @@
 
 <template>
   <!-- 全局容器 -->
-  <div id="app">
+  <div>
     <!-- 动态渲染当前路由组件 -->
     <router-view v-slot="{ Component }">
       <transition name="fade" mode="out-in">

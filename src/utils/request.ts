@@ -1,10 +1,12 @@
 import axios from 'axios';
-import router from "@/router";
 
 const request = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL, // 环境变量配置后端地址
     timeout: 10000, // 超时时间
-    headers: {'Content-Type': 'application/json'}
+    headers: {
+        'Content-Type': 'application/json',
+        'Store-Id': localStorage.getItem('currentStoreId')
+    }
 });
 
 // 请求拦截器（添加 Token）
@@ -18,8 +20,10 @@ request.interceptors.request.use(config => {
 request.interceptors.response.use(
     response => response.data, // 直接返回核心数据
     error => {
+        console.log('error.response?.status', error.response?.status);
         if (error.response?.status === 401) {
-            router.push('/login'); // 未授权跳转登录
+            // router.push('/login'); // 未授权跳转登录
+            location.href == '/login';
         }
         return Promise.reject(error);
     }
