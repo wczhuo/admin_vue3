@@ -65,10 +65,20 @@ watch(
       props.schema.forEach(item => {
         let isChange = false;
         if (item?.dependencies?.triggerFields) {
-          item?.dependencies?.triggerFields.forEach(field => {
+          for (const field of item?.dependencies?.triggerFields) {
+            if (isChange) {
+              break;
+            }
             isChange = newState[field] !== oldState[field];
             console.log(item.fieldName, 'isChange', isChange, field, oldState[field], newState[field]);
-          });
+          }
+          // item?.dependencies?.triggerFields.forEach(field => {
+          //   if(isChange){
+          //     break;
+          //   }
+          //   isChange = newState[field] !== oldState[field];
+          //   console.log(item.fieldName, 'isChange', isChange, field, oldState[field], newState[field]);
+          // });
         }
         console.log(item.fieldName, 'isChange', isChange);
         // 如果字段值发生了变化，则重新生成规格
