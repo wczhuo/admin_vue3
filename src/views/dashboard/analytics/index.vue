@@ -6,6 +6,22 @@ const schema: any = [
     label: 'ID',
     component: 'Input',
   },
+  {
+    fieldName: 'name',
+    label: 'name',
+    component: 'Input',
+    slot: (row: any)=>{
+      return row.name;
+    },
+    wrapperCol: { span: 8 },
+    labelCol: { span: 4 }
+  },
+  {
+    fieldName: 'title',
+    label: 'title',
+    component: 'Input',
+    slot: '',
+  },
 ];
 </script>
 
