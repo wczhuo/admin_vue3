@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {h, ref, useTemplateRef, watch} from 'vue';
-import {Spin, Form, FormItem, Input, Select} from 'ant-design-vue';
+import {Spin, Form, FormItem, Input, Select, Button} from 'ant-design-vue';
 
 const componentsMap: { [key: string]: any } = {
   'Input': Input,
@@ -9,7 +9,10 @@ const componentsMap: { [key: string]: any } = {
 
 const formState = ref(<Record<string, any>>{});
 const rulesState = ref(<Record<string, any>>{});
-const formApi = useTemplateRef('form');
+const formApi: any = useTemplateRef('form');
+const formCollapse = ref(false);
+const showCollapseButton = ref(false);
+const formCollapseIndexArr = ref(<any>[]);
 
 interface Dependencies {
   triggerFields: Array<string>;
@@ -17,7 +20,7 @@ interface Dependencies {
   show: boolean | Function;
 }
 
-interface FormSchema {
+export interface FormSchema {
   label?: string;
   fieldName?: string | undefined | any;
   component?: string;
@@ -25,6 +28,7 @@ interface FormSchema {
   rules?: string;
   dependencies?: Dependencies;
   slots?: Record<string, any>;
+  defaultValue?: any;
 }
 
 // interface Slots{
@@ -33,6 +37,14 @@ interface FormSchema {
 
 const props = defineProps({
   loading: {
+    type: Boolean,
+    default: false,
+  },
+  collapse: { // 折叠更多表单
+    type: Boolean,
+    default: false,
+  },
+  showCollapseButton: { // 显示折叠更多按钮
     type: Boolean,
     default: false,
   },
@@ -50,7 +62,7 @@ const props = defineProps({
   },
   wrapperClass: {
     type: String,
-    default: 'grid-cols-2 gap-x-4',
+    default: 'grid-cols-4 gap-x-4',
   },
   wrapperCol: {
     type: Object,
@@ -58,7 +70,7 @@ const props = defineProps({
   },
   labelCol: {
     type: Object,
-    default: {span: 6},
+    default: {span: 8},
   }
 });
 
@@ -105,11 +117,17 @@ watch(
 props.schema.forEach(item => {
   rulesState.value[item.fieldName] = {
     message: item.rules == 'selectRequired' ? `请选择${item.label}` : `请输入${item.label}`,
-    required: (item?.dependencies?.required instanceof Function) ? (item?.dependencies?.required(formState)) : (item?.dependencies?.required === true ? true : !!item.rules),
+    // required: (item?.dependencies?.required instanceof Function) ? (item?.dependencies?.required(formState)) : (item?.dependencies?.required === true ? true : !!item.rules),
+    required: false,
     show: (item?.dependencies?.show instanceof Function) ? (item?.dependencies?.show(formState)) : (item?.dependencies?.show !== false),
   };
+  // 初始化默认值
+  formState.value[item.fieldName] = item?.defaultValue ? item?.defaultValue : '';
 });
-console.log('rulesState', rulesState);
+// console.log('rulesState', rulesState);
+
+formCollapse.value = props.collapse;
+showCollapseButton.value = props.showCollapseButton;
 
 const formItemClass = (item: any, __index: any) => {
   return item?.formItemClass ? item?.formItemClass : props.commonConfig.formItemClass;
@@ -145,8 +163,22 @@ const setFieldValue = (field: any, value: any) => {
   formState.value[field] = value;
 }
 const resetForm = () => {
-  console.log('formApi', formApi);
-  // formApi.value.resetForm();
+  console.log('formApi', formApi, formApi.value);
+  formApi.value.resetFields();
+}
+const onSubmit = () => {
+
+}
+const handleCollapse = () => {
+  // 默认展示前三个空间
+  formCollapse.value = !formCollapse.value;
+  if (formCollapse.value) {
+    for (let i = 4; i < props.schema.length; i++) {
+      formCollapseIndexArr.value.push(i);
+    }
+  } else {
+    formCollapseIndexArr.value = [];
+  }
 }
 defineExpose({setValues, resetForm, setFieldValue, formApi});
 </script>
@@ -155,9 +187,10 @@ defineExpose({setValues, resetForm, setFieldValue, formApi});
   <div class="form-container">
     <Spin :spinning="loading">
       <Form ref="form" :model="formState" :label-col="labelCol" :wrapper-col="wrapperCol" :class="wrapperClass"
-            class="grid">
+            class="grid" :colon="false">
         <template v-for="(item, index) in schema">
-          <FormItem v-show="rulesState[item.fieldName].show" :class="formItemClass(item, index)"
+          <FormItem v-show="rulesState[item.fieldName]?.show && (formCollapseIndexArr.indexOf(index) < 0)"
+                    :class="formItemClass(item, index)"
                     :rules="rulesState[item.fieldName]" :label="(item as any).label"
                     :label-col="formItemLabelCol(item, index)" :wrapper-col="formItemWrapperCol(item, index)"
                     :name="item.fieldName">
@@ -171,11 +204,34 @@ defineExpose({setValues, resetForm, setFieldValue, formApi});
             />
           </FormItem>
         </template>
+        <div class="col-span-full w-full text-right pb-2 grid form-action">
+          <Button type="primary" @click="onSubmit">查询</Button>
+          <Button style="margin-left: 12px" @click="resetForm">重置</Button>
+          <span v-if="showCollapseButton" style="margin-left: 12px" class="form-collapse" @click="handleCollapse">
+            {{ formCollapse ? '收起' : '展开' }}
+          </span>
+        </div>
       </Form>
     </Spin>
   </div>
 </template>
 
 <style scoped>
+.form-action {
+  grid-column: -2 / -1;
+  margin-left: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  height: 32px;
+  line-height: 32px;
+  margin-bottom: 12px;
 
+  .form-collapse {
+    color: #1668dc;
+  }
+}
+.ant-form-item {
+  margin-bottom: 12px;
+}
 </style>

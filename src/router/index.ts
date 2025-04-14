@@ -2,12 +2,15 @@
 import {createRouter, createWebHistory, type RouteRecordRaw} from 'vue-router'
 import {getAllMenusApi} from "@/api/core/menu.ts";
 import {isLogin} from "@/api/core/auth.ts";
+import {message} from 'ant-design-vue';
 // import HomeView from '@/views/HomeView.vue'
 let menus: any;
 try {
     if(isLogin()){
+        const hide = message.loading('加载菜单中...', 0);
         menus = await getAllMenusApi();
         console.log('menus', menus);
+        hide();
     }
 } catch (e) {
 
