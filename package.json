@@ -10,14 +10,17 @@
   },
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",
+    "@iconify/vue": "^4.3.0",
     "ant-design-vue": "^4.2.6",
     "axios": "^1.8.4",
+    "iconify-icon": "^2.3.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
     "vxe-pc-ui": "4.5.22",
     "vxe-table": "4.13.2"
   },
   "devDependencies": {
+    "@iconify/json": "^2.2.327",
     "@types/node": "^22.14.0",
     "@types/sass": "^1.45.0",
     "@vitejs/plugin-vue": "^5.2.1",

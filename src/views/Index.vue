@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import {ref} from 'vue';
-import {Menu, Tabs, TabPane, Button} from 'ant-design-vue';
+import {Menu, Tabs, TabPane, Button, Breadcrumb, BreadcrumbItem, Space} from 'ant-design-vue';
 import type {MenuTheme} from 'ant-design-vue';
 import router from "@/router";
 import {menus} from "@/router";
+import {getInitData} from "@/api/core/site.ts";
+import {getSiteInfo, setSiteInfo} from "@/utils/tools.ts";
+import Icon from "@/components/Icon.vue";
 
 const theme = ref<MenuTheme>('dark');
 const selectedKeys = ref(['1']);
@@ -11,6 +14,8 @@ const openKeys = ref(['sub1']);
 // 选项卡，最后一个选项卡不允许关闭
 const tabs = ref(<any>[]);
 const activeKey = ref('');
+const activeMenuKey = ref('');
+const breadcrumbMap = ref(<Record<string, any>>{});
 const generateItems = (items?: any[]): any[] => {
   if (!items) return [];
 
@@ -26,6 +31,24 @@ const generateItems = (items?: any[]): any[] => {
       }
   ));
 };
+// 生成面包屑映射
+const generateBreadcrumbMap = (items?: any[], map?: any[]): void => {
+  if (!items) return;
+
+  items.forEach(item => {
+        // map?.push({title: item?.meta?.title, icon: item?.meta?.icon});
+        if (map) {
+          breadcrumbMap.value[item.id] = [...map];
+        }
+        breadcrumbMap.value[item.id].push({title: item?.meta?.title, icon: item?.meta?.icon});
+        // breadcrumbMap.value[item.id] = map;
+        generateBreadcrumbMap(item.children, breadcrumbMap.value[item.id]);
+      }
+  );
+};
+
+generateBreadcrumbMap(menus?.result as any, []);
+console.log('breadcrumbMap', breadcrumbMap);
 
 // console.log('menus', menus);
 // console.log('menus', menus?.result);
@@ -38,6 +61,7 @@ tabs.value.push({
 });
 router.push(defaultPage);
 activeKey.value = defaultPage;
+activeMenuKey.value = '2';
 // console.log('items', items);
 
 const handleTabChange = (tab: any) => {
@@ -70,18 +94,28 @@ const handleMenuItem = (item: any) => {
     });
   }
   activeKey.value = item.item.path;
+  // console.log('item', item, item.item);
+  activeMenuKey.value = item.key;
   // console.log('item.item.path activeKey', item.item.path);
   // 路由跳转
   router.push(item.item.path);
 }
+// 获取站点基础信息
+const siteInfo = ref<any>(getSiteInfo());
+getInitData().then((data: any) => {
+  console.log('data', data);
+  // loading.value = false;
+  siteInfo.value = data?.result;
+  setSiteInfo(data?.result);
+});
 </script>
 
 <template>
   <div class="index-container flex-row">
     <div class="left-sidebar flex-column">
-      <div class="header">
-        公司logo
-        公司名称
+      <div class="header flex-row">
+        <img class="logo" :src="siteInfo.logo" alt="logo">
+        <span class="title">{{ siteInfo.name }}</span>
       </div>
       <div class="menu">
         <Menu
@@ -96,14 +130,30 @@ const handleMenuItem = (item: any) => {
       </div>
     </div>
     <div class="right-container flex-column">
-      <div class="header">
-        用户信息 门店信息
-        <Button @click="logout">退出登录</Button>
+      <div class="header flex-row">
+        <div class="left">
+          <Space size="middle">
+            <Icon class="menu-switch" icon="lucide:menu"/>
+            <Icon class="refresh" icon="lucide:rotate-cw"/>
+            <Breadcrumb>
+              <BreadcrumbItem v-for="item in breadcrumbMap[activeMenuKey]">
+                <Icon v-if="item.icon" :icon="item.icon"/>
+                {{ item.title }}
+              </BreadcrumbItem>
+            </Breadcrumb>
+          </Space>
+        </div>
+        <div class="right">
+          <Space size="middle">
+            门店信息 用户信息 用户下拉菜单
+            <Button @click="logout">退出登录</Button>
+          </Space>
+        </div>
       </div>
       <div class="content">
         <div class="tab-box">
-          <Tabs @change="handleTabChange" v-model:activeKey="activeKey">
-            <TabPane v-for="item in tabs" :key="item.key" :tab="item.tab">
+          <Tabs @change="handleTabChange" v-model:activeKey="activeKey" size="small" type="editable-card" hide-add>
+            <TabPane v-for="item in tabs" :key="item.key" :tab="item.tab" :closable="tabs && tabs.length > 1">
             </TabPane>
           </Tabs>
         </div>
@@ -137,19 +187,37 @@ const handleMenuItem = (item: any) => {
 }
 
 .left-sidebar {
-  width: 300px;
+  width: 240px;
   height: 100vh;
   overflow-y: auto;
   scrollbar-gutter: stable;
-  scrollbar-color: #000B16 #001427;
-  background-color: #001427;
+  scrollbar-color: #000B16 #1C1E23;
+  background-color: #1C1E23;
+  border-right: 1px solid rgb(54, 54, 58);
 
   .header {
-    height: 120px;
+    height: 40px;
+    line-height: 40px;
+    justify-content: center;
+    padding-top: 5px;
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      margin: 0 10px 0 0;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #FFFFFF;
+    }
   }
 
   .menu {
-    height: calc(100vh - 120px);
+    height: calc(100vh - 40px);
+    padding-top: 14px;
   }
 
   .ant-menu-sub {
@@ -157,7 +225,35 @@ const handleMenuItem = (item: any) => {
   }
 }
 
-.ant-menu-dark.ant-menu-inline .ant-menu-sub.ant-menu-inline {
+.ant-menu-item {
+  background: #1C1E23 !important;
+}
+
+.ant-menu-item-only-child {
+  background: #1C1E23 !important;
+}
+
+.ant-menu-dark {
+  background: #1C1E23;
+}
+
+.ant-menu-dark.ant-menu-inline {
+  background: #1C1E23;
+}
+
+.ant-menu-dark.ant-menu-inline {
+  background: #1C1E23;
+}
+
+.ant-menu {
+  background: #1C1E23 !important;
+}
+
+.ant-menu-sub.ant-menu-inline {
+  background: #1C1E23;
+}
+
+.ant-menu-dark.ant-menu-inline {
   background: transparent !important;
 }
 
@@ -173,6 +269,31 @@ const handleMenuItem = (item: any) => {
 }
 
 .right-container {
-  width: calc(100% - 300px);
+  width: calc(100% - 240px);
+  padding-top: 8px;
+
+  .header {
+    padding-left: 14px;
+
+    .left {
+      display: flex;
+      flex: 1;
+    }
+
+    .right {
+      display: flex;
+      flex: 5;
+      justify-content: flex-end;
+    }
+  }
+
+  .content {
+    .tab-box {
+      height: 40px;
+      line-height: 40px;
+
+
+    }
+  }
 }
 </style>

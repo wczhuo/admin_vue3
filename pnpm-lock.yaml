@@ -11,12 +11,18 @@ importers:
       '@ant-design/icons-vue':
         specifier: ^7.0.1
         version: 7.0.1(vue@3.5.13(typescript@5.7.3))
+      '@iconify/vue':
+        specifier: ^4.3.0
+        version: 4.3.0(vue@3.5.13(typescript@5.7.3))
       ant-design-vue:
         specifier: ^4.2.6
         version: 4.2.6(vue@3.5.13(typescript@5.7.3))
       axios:
         specifier: ^1.8.4
         version: 1.8.4
+      iconify-icon:
+        specifier: ^2.3.0
+        version: 2.3.0
       vue:
         specifier: ^3.5.13
         version: 3.5.13(typescript@5.7.3)
@@ -30,6 +36,9 @@ importers:
         specifier: 4.13.2
         version: 4.13.2(vue@3.5.13(typescript@5.7.3))
     devDependencies:
+      '@iconify/json':
+        specifier: ^2.2.327
+        version: 2.2.327
       '@types/node':
         specifier: ^22.14.0
         version: 22.14.0
@@ -254,6 +263,17 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@iconify/json@2.2.327':
+    resolution: {integrity: sha512-G9LFSD3ZSNHj+0O98ZStkBOd543I05fomTep3DA8UyrreJRnsbjswAe8Ux9teHc/GE/alcCuaaxNqWyCTdN6PA==}
+
+  '@iconify/types@2.0.0':
+    resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
+
+  '@iconify/vue@4.3.0':
+    resolution: {integrity: sha512-Xq0h6zMrHBbrW8jXJ9fISi+x8oDQllg5hTDkDuxnWiskJ63rpJu9CvJshj8VniHVTbsxCg9fVoPAaNp3RQI5OQ==}
+    peerDependencies:
+      vue: '>=3'
 
   '@jridgewell/sourcemap-codec@1.5.0':
     resolution: {integrity: sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==}
@@ -699,6 +719,9 @@ packages:
     resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
     hasBin: true
 
+  iconify-icon@2.3.0:
+    resolution: {integrity: sha512-C0beI9oTDxQz6voI5CKl7MiJf0Lw4UU8K4G4t6pcUDClLmCvuMOpcvd8MAztQ2SfoH0iv7WHdxBFjekKPFKH2Q==}
+
   immutable@5.1.1:
     resolution: {integrity: sha512-3jatXi9ObIsPGr3N5hGw/vWWcTkq6hUYhpQz4k0wLC+owqWi/LiugIw9x0EdNZ2yGedKN/HzePiBvaJRXa0Ujg==}
 
@@ -770,6 +793,9 @@ packages:
 
   path-browserify@1.0.1:
     resolution: {integrity: sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==}
+
+  pathe@1.1.2:
+    resolution: {integrity: sha512-whLdWMYL2TwI08hn8/ZqAbrVemu0LNaNNJZX73O6qaIdCTfXutsLhMkjdENX0qhsQ9uIimo4/aQOmXkoon2nDQ==}
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -1173,6 +1199,18 @@ snapshots:
 
   '@esbuild/win32-x64@0.25.2':
     optional: true
+
+  '@iconify/json@2.2.327':
+    dependencies:
+      '@iconify/types': 2.0.0
+      pathe: 1.1.2
+
+  '@iconify/types@2.0.0': {}
+
+  '@iconify/vue@4.3.0(vue@3.5.13(typescript@5.7.3))':
+    dependencies:
+      '@iconify/types': 2.0.0
+      vue: 3.5.13(typescript@5.7.3)
 
   '@jridgewell/sourcemap-codec@1.5.0': {}
 
@@ -1611,6 +1649,10 @@ snapshots:
 
   he@1.2.0: {}
 
+  iconify-icon@2.3.0:
+    dependencies:
+      '@iconify/types': 2.0.0
+
   immutable@5.1.1: {}
 
   is-extglob@2.1.1:
@@ -1668,6 +1710,8 @@ snapshots:
     optional: true
 
   path-browserify@1.0.1: {}
+
+  pathe@1.1.2: {}
 
   picocolors@1.1.1: {}
 

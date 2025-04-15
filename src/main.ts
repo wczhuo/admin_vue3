@@ -3,6 +3,8 @@ import './style.css'
 import App from './App.vue'
 import router from './router'
 import '@/assets/scss/global.scss';
+// import 'iconify-icon';
+import {Icon} from '@iconify/vue';
 
 // ...
 import VxeUI from 'vxe-pc-ui'
@@ -19,5 +21,7 @@ import 'vxe-table/lib/style.css'
 // });
 
 const app = createApp(App);
+
+app.component('iconify-icon', Icon);
 
 app.use(router).use(VxeUI).use(VxeUITable).mount('#app');

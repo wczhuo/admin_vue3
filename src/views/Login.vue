@@ -4,12 +4,23 @@ import {Form, FormItem, Input, Button, message, Spin} from 'ant-design-vue';
 import {loginApi} from "@/api/core/auth.ts";
 import router from "@/router";
 import SlideVerify from "@/components/SlideVerify.vue";
+import {getInitData} from "@/api/core/site.ts";
+import {getSiteInfo, setSiteInfo} from "@/utils/tools.ts";
 
 const formLogin: any = useTemplateRef('formLogin');
 
 const loading = ref(false);
 const verifySuccess = ref(import.meta.env.DEV);
 const verifyWarning = ref(false);
+
+// 获取站点基础信息
+const siteInfo = ref<any>(getSiteInfo());
+getInitData().then((data: any) => {
+  console.log('data', data);
+  // loading.value = false;
+  siteInfo.value = data?.result;
+  setSiteInfo(data?.result);
+});
 
 // 验证规则配置
 const rules: any = {
@@ -95,6 +106,7 @@ const slideVerifySuccess = () => {
   text-align: center;
   justify-items: center;
   align-content: center;
+
   .login-form {
     width: 300px;
 
