@@ -48,25 +48,34 @@ const generateBreadcrumbMap = (items?: any[], map?: any[]): void => {
 };
 
 generateBreadcrumbMap(menus?.result as any, []);
-console.log('breadcrumbMap', breadcrumbMap);
+// console.log('breadcrumbMap', breadcrumbMap);
 
 // console.log('menus', menus);
 // console.log('menus', menus?.result);
 const items = ref(generateItems(menus?.result as any));
 const defaultPage = '/dashboard/analysis';
+const defaultPageKey = '2';
 // 默认添加一个选项卡
 tabs.value.push({
-  key: defaultPage,
-  tab: '分析页'
+  key: defaultPageKey,
+  tab: '分析页',
+  path: defaultPage
 });
 router.push(defaultPage);
-activeKey.value = defaultPage;
-activeMenuKey.value = '2';
+activeKey.value = defaultPageKey;
+activeMenuKey.value = defaultPageKey;
 // console.log('items', items);
 
 const handleTabChange = (tab: any) => {
-  // console.log('tab', tab);
-  router.push(tab);
+  // console.log('tab', tab, option);
+  // router.push(tab);
+  tabs.value.forEach((item: any) => {
+    if (item.key === tab) {
+      // 切换路由
+      console.log('tab', tab, item);
+      router.push(item.path);
+    }
+  });
 }
 const logout = () => {
   localStorage.removeItem('token');
@@ -81,19 +90,21 @@ const handleMenuItem = (item: any) => {
   //
   let find = false;
   tabs.value.forEach((tab: any) => {
-    if (tab.key == item.item.path) {
+    if (tab.key == item.key) {
       // console.log('find item', tab.key, item.item.key);
       find = true;
     }
   });
   // console.log('find', find);
   if (!find) {
+    // console.log('find', item);
     tabs.value.push({
-      key: item.item.path,
-      tab: item.item.title
+      key: item.key,
+      tab: item.item.title,
+      path: item.item.path,
     });
   }
-  activeKey.value = item.item.path;
+  activeKey.value = item.key;
   // console.log('item', item, item.item);
   activeMenuKey.value = item.key;
   // console.log('item.item.path activeKey', item.item.path);
@@ -103,11 +114,28 @@ const handleMenuItem = (item: any) => {
 // 获取站点基础信息
 const siteInfo = ref<any>(getSiteInfo());
 getInitData().then((data: any) => {
-  console.log('data', data);
+  // console.log('data', data);
   // loading.value = false;
   siteInfo.value = data?.result;
   setSiteInfo(data?.result);
 });
+
+const handleTabEdit = (val: any, option: any) => {
+  // console.log('handleTabEdit val', val, option);
+  if(option === 'remove') {
+    tabs.value.forEach((tab: any, index: number) => {
+      if (tab.key === val) {
+        tabs.value.splice(index, 1);
+        // 切换路由
+        // console.log('切换路由', tabs.value[Math.max(index- 1, 0)].key);
+        router.push(tabs.value[Math.max(index- 1, 0)].path);
+        // 切换菜单激活项
+        // console.log('selectedKeys.value', selectedKeys.value);
+        selectedKeys.value = [tabs.value[Math.max(index- 1, 0)].key];
+      }
+    });
+  }
+}
 </script>
 
 <template>
@@ -152,8 +180,13 @@ getInitData().then((data: any) => {
       </div>
       <div class="content">
         <div class="tab-box">
-          <Tabs @change="handleTabChange" v-model:activeKey="activeKey" size="small" type="editable-card" hide-add>
+          <Tabs @change="handleTabChange" @edit="handleTabEdit" v-model:activeKey="activeKey" size="small" type="editable-card" hide-add>
             <TabPane v-for="item in tabs" :key="item.key" :tab="item.tab" :closable="tabs && tabs.length > 1">
+<!--              <template #closeIcon>-->
+<!--                <div class="tab-remove">-->
+<!--                <Icon icon="ci:close-sm" style="color: #ff4d4f;"/>-->
+<!--                </div>-->
+<!--              </template>-->
             </TabPane>
           </Tabs>
         </div>

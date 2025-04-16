@@ -9,7 +9,7 @@ try {
     if(isLogin()){
         const hide = message.loading('加载菜单中...', 0);
         menus = await getAllMenusApi();
-        console.log('menus', menus);
+        // console.log('menus', menus);
         hide();
     }
 } catch (e) {
@@ -83,7 +83,7 @@ const routes: Array<RouteRecordRaw> = [
         ],
     }
 ]
-console.log('routes', routes);
+// console.log('routes', routes);
 
 const router = createRouter({
     history: createWebHistory(),
