@@ -7,7 +7,7 @@ import {ConfigProvider, message} from 'ant-design-vue';
 
 import {theme} from 'ant-design-vue';
 const {darkAlgorithm} = theme;
-
+// 设置message样式
 ConfigProvider.config({
     theme: { algorithm: darkAlgorithm } as any,
     // theme: defaultAlgorithm,
