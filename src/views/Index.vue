@@ -1,13 +1,24 @@
 <script setup lang="ts">
-import {ref} from 'vue';
-import {Menu, Tabs, TabPane, Button, Breadcrumb, BreadcrumbItem, Space} from 'ant-design-vue';
+import {ref, h} from 'vue';
+import {
+  Menu,
+  Tabs,
+  TabPane,
+  Button,
+  Breadcrumb,
+  BreadcrumbItem,
+  Space,
+  Avatar,
+  Dropdown,
+  MenuItem
+} from 'ant-design-vue';
 import type {MenuTheme} from 'ant-design-vue';
 import router from "@/router";
 import {menus} from "@/router";
 import {getInitData} from "@/api/core/site.ts";
 import {getSiteInfo, setSiteInfo} from "@/utils/tools.ts";
 import Icon from "@/components/Icon.vue";
-import {getUserInfoApi, setUserInfo} from "@/api/core/auth.ts";
+import {getUserInfoApi, setUserInfo, userInfo} from "@/api/core/auth.ts";
 
 const theme = ref<MenuTheme>('dark');
 const selectedKeys = ref(<any>[]);
@@ -84,6 +95,7 @@ const generateItems = (items?: any[]): any[] => {
         path: item.path,
         redirect: item.redirect,
         // icon: item?.meta?.icon,
+        icon: () => item?.meta?.icon ? h(Icon, {icon: item?.meta?.icon}) : null,
         disabled: item?.disabled,
         label: item?.meta?.title,
         title: item?.meta?.title,
@@ -179,6 +191,11 @@ const handleTabEdit = (val: any, option: any) => {
     });
   }
 }
+const getPopupContainer = () => {
+  // triggerNode => triggerNode.parentNode
+  // console.log('triggerNode', triggerNode);
+  return document.getElementsByClassName('user-box')[0] as HTMLElement;
+}
 </script>
 
 <template>
@@ -197,6 +214,7 @@ const handleTabEdit = (val: any, option: any) => {
             :theme="theme"
             :items="items"
             @click="handleMenuItem"
+            :inlineIndent="16"
         />
       </div>
     </div>
@@ -234,7 +252,48 @@ const handleTabEdit = (val: any, option: any) => {
             <Icon class="bell-icon" icon="lucide:bell" size="16px"/>
             <div class="circle"></div>
           </div>
-          <Button @click="logout">退出登录</Button>
+          <div class="user-box">
+            <Dropdown class="user-dropdown" trigger="click" :getPopupContainer="getPopupContainer">
+              <Avatar :src="userInfo()?.avatar"/>
+              <template #overlay>
+                <div class="user-menu">
+                  <div class="user-menu-item" key="1">
+                    <div class="flex-row">
+                      <div class="avatar"><Avatar :size="40" :src="userInfo()?.avatar"/></div>
+                      <div class="info flex-column">
+                        <div class="nickname">{{ userInfo()?.nickname }}</div>
+                        <div class="email">{{ userInfo()?.email }}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="user-menu-item" key="3">
+                    <Space :size="2">
+                      <Icon class="icon" icon="lucide:lock-keyhole"></Icon>
+                      锁定屏幕
+                    </Space>
+                  </div>
+                  <div class="user-menu-item" key="5">
+                    <Space :size="2">
+                      <Icon class="icon" icon="bx:bxs-store"></Icon>
+                      {{ storeName }}
+                    </Space>
+                  </div>
+                  <div class="user-menu-item" key="7">
+                    <Space :size="2">
+                      <Icon class="icon" icon="ant-design:user-outlined"></Icon>
+                      个人信息
+                    </Space>
+                  </div>
+                  <div class="user-menu-item" key="9">
+                    <Space :size="2">
+                      <Icon class="icon" icon="lucide:log-out"></Icon>
+                      退出登录
+                    </Space>
+                  </div>
+                </div>
+              </template>
+            </Dropdown>
+          </div>
         </div>
       </div>
       <div class="content">
@@ -280,7 +339,7 @@ const handleTabEdit = (val: any, option: any) => {
 }
 
 .left-sidebar {
-  width: 240px;
+  width: 224px;
   height: 100vh;
   overflow-y: auto;
   scrollbar-gutter: stable;
@@ -362,7 +421,7 @@ const handleTabEdit = (val: any, option: any) => {
 }
 
 .right-container {
-  width: calc(100% - 240px);
+  width: calc(100% - 224px);
   padding-top: 8px;
 
   .header {
@@ -379,8 +438,13 @@ const handleTabEdit = (val: any, option: any) => {
 
     .right {
       display: flex;
-      flex: 5;
+      flex: 2;
       justify-content: flex-end;
+
+      .user-box {
+        padding-right: 12px;
+        position: relative;
+      }
     }
   }
 
@@ -389,6 +453,50 @@ const handleTabEdit = (val: any, option: any) => {
       height: 40px;
       line-height: 40px;
       /*padding-left: 10px;*/
+    }
+  }
+}
+
+/* 用户头像下拉菜单 */
+.user-menu {
+  background-color: rgb(36, 36, 36);
+  height: 100%;
+  width: 250px;
+  border-radius: 5px;
+
+  .user-menu-item {
+    padding: 0 0 0 16px;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    height: 50px;
+    line-height: 50px;
+    justify-content: flex-start;
+    border-top: 1px solid rgb(54, 54, 58);
+
+    .icon {
+      margin-right: 10px;
+    }
+  }
+
+  .user-menu-item:first-child {
+    border: none;
+    height: 60px;
+    line-height: unset;
+
+    .avatar {
+      margin: 10px 10px 10px 0;
+    }
+    .info {
+      margin-left: 6px;
+      .nickname {
+        height: 30px;
+        margin-top: 8px;
+      }
+      .email {
+        height: 30px;
+        margin-top: -10px;
+      }
     }
   }
 }
