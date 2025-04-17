@@ -9,13 +9,66 @@ import {getSiteInfo, setSiteInfo} from "@/utils/tools.ts";
 import Icon from "@/components/Icon.vue";
 
 const theme = ref<MenuTheme>('dark');
-const selectedKeys = ref(['1']);
-const openKeys = ref(['sub1']);
+const selectedKeys = ref([]);
+const openKeys = ref([]);
 // 选项卡，最后一个选项卡不允许关闭
-const tabs = ref(<any>[]);
+const setTabs = () => {
+  localStorage.setItem('tabs', JSON.stringify(tabs.value));
+}
+const getTabs = () => {
+  let temp = JSON.parse(localStorage.getItem('tabs') || '[]');
+  if (temp.length == 0) {
+    // 默认添加一个选项卡
+    temp.push({
+      key: defaultPageKey,
+      tab: '分析页',
+      path: defaultPage
+    });
+  }
+  return temp;
+}
+const getCurrentRoute = () => {
+  // console.log('location', location);
+  return {route: location.pathname, key: routeMap.value[location.pathname]?.id};
+}
+
+// 当前激活选中的选项卡key
 const activeKey = ref('');
+// 当前激活选中的菜单key
 const activeMenuKey = ref('');
+// 面包屑映射
 const breadcrumbMap = ref(<Record<string, any>>{});
+// 路由映射
+const routeMap = ref(<Record<string, any>>{});
+// 生成面包屑映射
+const generateBreadcrumbMap = (items?: any[], map?: any[]): void => {
+  if (!items) return;
+
+  items.forEach(item => {
+        // map?.push({title: item?.meta?.title, icon: item?.meta?.icon});
+        if (map) {
+          breadcrumbMap.value[item.id] = [...map];
+        }
+        breadcrumbMap.value[item.id].push({title: item?.meta?.title, icon: item?.meta?.icon, path: item.path});
+        routeMap.value[item.path] = item;
+        // breadcrumbMap.value[item.id] = map;
+        generateBreadcrumbMap(item.children, breadcrumbMap.value[item.id]);
+      }
+  );
+};
+// 生成面包屑映射，路由id->面包屑数组
+generateBreadcrumbMap(menus?.result as any, []);
+
+// console.log('breadcrumbMap', breadcrumbMap);
+// console.log('routeMap', routeMap);
+// 获取当前路由
+const currentRoute = getCurrentRoute();
+console.log('currentRoute', currentRoute);
+const defaultPage = '/dashboard/analysis';
+const defaultPageKey = '2';
+const tabs = ref(getTabs());
+
+// 生成树形结构的菜单
 const generateItems = (items?: any[]): any[] => {
   if (!items) return [];
 
@@ -31,39 +84,11 @@ const generateItems = (items?: any[]): any[] => {
       }
   ));
 };
-// 生成面包屑映射
-const generateBreadcrumbMap = (items?: any[], map?: any[]): void => {
-  if (!items) return;
-
-  items.forEach(item => {
-        // map?.push({title: item?.meta?.title, icon: item?.meta?.icon});
-        if (map) {
-          breadcrumbMap.value[item.id] = [...map];
-        }
-        breadcrumbMap.value[item.id].push({title: item?.meta?.title, icon: item?.meta?.icon});
-        // breadcrumbMap.value[item.id] = map;
-        generateBreadcrumbMap(item.children, breadcrumbMap.value[item.id]);
-      }
-  );
-};
-
-generateBreadcrumbMap(menus?.result as any, []);
-// console.log('breadcrumbMap', breadcrumbMap);
-
-// console.log('menus', menus);
-// console.log('menus', menus?.result);
+// 生成树形结构的菜单
 const items = ref(generateItems(menus?.result as any));
-const defaultPage = '/dashboard/analysis';
-const defaultPageKey = '2';
-// 默认添加一个选项卡
-tabs.value.push({
-  key: defaultPageKey,
-  tab: '分析页',
-  path: defaultPage
-});
-router.push(defaultPage);
-activeKey.value = defaultPageKey;
-activeMenuKey.value = defaultPageKey;
+router.push(currentRoute.route.length > 0 ? currentRoute.route : defaultPage);
+activeKey.value = currentRoute.route.length > 0 ? currentRoute.key : defaultPageKey;
+activeMenuKey.value = currentRoute.route.length > 0 ? currentRoute.key : defaultPageKey;
 // console.log('items', items);
 
 const handleTabChange = (tab: any) => {
@@ -103,6 +128,7 @@ const handleMenuItem = (item: any) => {
       tab: item.item.title,
       path: item.item.path,
     });
+    setTabs();
   }
   activeKey.value = item.key;
   // console.log('item', item, item.item);
@@ -122,16 +148,18 @@ getInitData().then((data: any) => {
 
 const handleTabEdit = (val: any, option: any) => {
   // console.log('handleTabEdit val', val, option);
-  if(option === 'remove') {
+  if (option === 'remove') {
     tabs.value.forEach((tab: any, index: number) => {
       if (tab.key === val) {
         tabs.value.splice(index, 1);
+        // 保存tabs
+        setTabs();
         // 切换路由
         // console.log('切换路由', tabs.value[Math.max(index- 1, 0)].key);
-        router.push(tabs.value[Math.max(index- 1, 0)].path);
+        router.push(tabs.value[Math.max(index - 1, 0)].path);
         // 切换菜单激活项
         // console.log('selectedKeys.value', selectedKeys.value);
-        selectedKeys.value = [tabs.value[Math.max(index- 1, 0)].key];
+        selectedKeys.value = [tabs.value[Math.max(index - 1, 0)].key];
       }
     });
   }
@@ -180,13 +208,14 @@ const handleTabEdit = (val: any, option: any) => {
       </div>
       <div class="content">
         <div class="tab-box">
-          <Tabs @change="handleTabChange" @edit="handleTabEdit" v-model:activeKey="activeKey" size="small" type="editable-card" hide-add>
+          <Tabs @change="handleTabChange" @edit="handleTabEdit" v-model:activeKey="activeKey" size="small"
+                type="editable-card" hide-add>
             <TabPane v-for="item in tabs" :key="item.key" :tab="item.tab" :closable="tabs && tabs.length > 1">
-<!--              <template #closeIcon>-->
-<!--                <div class="tab-remove">-->
-<!--                <Icon icon="ci:close-sm" style="color: #ff4d4f;"/>-->
-<!--                </div>-->
-<!--              </template>-->
+              <!--              <template #closeIcon>-->
+              <!--                <div class="tab-remove">-->
+              <!--                <Icon icon="ci:close-sm" style="color: #ff4d4f;"/>-->
+              <!--                </div>-->
+              <!--              </template>-->
             </TabPane>
           </Tabs>
         </div>

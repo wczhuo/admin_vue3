@@ -2,8 +2,17 @@
 import {createRouter, createWebHistory, type RouteRecordRaw} from 'vue-router'
 import {getAllMenusApi} from "@/api/core/menu.ts";
 import {isLogin} from "@/api/core/auth.ts";
-import {message} from 'ant-design-vue';
+import {ConfigProvider, message} from 'ant-design-vue';
 // import HomeView from '@/views/HomeView.vue'
+
+import {theme} from 'ant-design-vue';
+const {darkAlgorithm} = theme;
+
+ConfigProvider.config({
+    theme: { algorithm: darkAlgorithm } as any,
+    // theme: defaultAlgorithm,
+});
+
 let menus: any;
 try {
     if(isLogin()){

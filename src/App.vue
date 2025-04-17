@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import {ref} from 'vue';
-import {theme, ConfigProvider} from 'ant-design-vue';
+import {App, theme, ConfigProvider} from 'ant-design-vue';
 import {VxeUI} from "vxe-table";
+
+defineOptions({name: 'App'});
 
 const {darkAlgorithm, defaultAlgorithm} = theme;
 const isDark = ref(true); // 通过状态控制暗黑模式
@@ -14,16 +16,16 @@ VxeUI.setTheme('dark');
 
 <template>
   <!-- 全局容器 -->
-  <div>
-    <ConfigProvider :theme="{ algorithm: isDark ? darkAlgorithm : defaultAlgorithm }">
+  <ConfigProvider :theme="{ algorithm: isDark ? darkAlgorithm : defaultAlgorithm }">
+    <App>
       <!-- 动态渲染当前路由组件 -->
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
           <component :is="Component"/>
         </transition>
       </router-view>
-    </ConfigProvider>
-  </div>
+    </App>
+  </ConfigProvider>
 </template>
 
 <style scoped>
