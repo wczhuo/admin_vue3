@@ -19,3 +19,14 @@ export function userInfo() {
         return null;
     }
 }
+
+export function setUserInfo(userInfo: object) {
+    localStorage.setItem('userInfo', JSON.stringify(userInfo));
+}
+
+/**
+ * 获取用户信息
+ */
+export async function getUserInfoApi() {
+    return request.get('/user/info');
+}

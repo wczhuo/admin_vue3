@@ -7,10 +7,12 @@ import {menus} from "@/router";
 import {getInitData} from "@/api/core/site.ts";
 import {getSiteInfo, setSiteInfo} from "@/utils/tools.ts";
 import Icon from "@/components/Icon.vue";
+import {getUserInfoApi, setUserInfo} from "@/api/core/auth.ts";
 
 const theme = ref<MenuTheme>('dark');
-const selectedKeys = ref([]);
-const openKeys = ref([]);
+const selectedKeys = ref(<any>[]);
+const openKeys = ref(<any>[]);
+const storeName = ref<string>();
 // 选项卡，最后一个选项卡不允许关闭
 const setTabs = () => {
   localStorage.setItem('tabs', JSON.stringify(tabs.value));
@@ -28,8 +30,13 @@ const getTabs = () => {
   return temp;
 }
 const getCurrentRoute = () => {
-  // console.log('location', location);
-  return {route: location.pathname, key: routeMap.value[location.pathname]?.id};
+  const route = location.pathname;
+  if (routeMap.value[route] == undefined) {
+    return {route: defaultPage, key: defaultPageKey};
+  } else {
+    // console.log('location', location);
+    return {route: location.pathname, key: routeMap.value[location.pathname]?.id};
+  }
 }
 
 // 当前激活选中的选项卡key
@@ -102,12 +109,20 @@ const handleTabChange = (tab: any) => {
     }
   });
 }
+// 退出登录
 const logout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('userInfo');
   router.push('/login');
 }
-
+// 获取登录管理员信息
+getUserInfoApi().then((data: any) => {
+  console.log('getUserInfoApi', data);
+  // loading.value = false;
+  // localStorage.setItem('userInfo', JSON.stringify(data?.result));
+  setUserInfo(data?.result);
+  storeName.value = data?.result?.currentStoreName;
+});
 const handleMenuItem = (item: any) => {
   // console.log('handleMenuItem', item, tabs.value);
   // 路由跳转
@@ -188,28 +203,44 @@ const handleTabEdit = (val: any, option: any) => {
     <div class="right-container flex-column">
       <div class="header flex-row">
         <div class="left">
-          <Space size="middle">
-            <Icon class="menu-switch" icon="lucide:menu"/>
-            <Icon class="refresh" icon="lucide:rotate-cw"/>
-            <Breadcrumb>
-              <BreadcrumbItem v-for="item in breadcrumbMap[activeMenuKey]">
-                <Icon v-if="item.icon" :icon="item.icon"/>
-                {{ item.title }}
-              </BreadcrumbItem>
-            </Breadcrumb>
+          <Space :size="0">
+            <div class="menu-switch-box">
+              <Icon class="menu-switch" icon="lucide:menu"/>
+            </div>
+            <div class="refresh-box">
+              <Icon class="refresh" icon="lucide:rotate-cw"/>
+            </div>
+            <div class="breadcrumb-box">
+              <Breadcrumb>
+                <template #separator>
+                  <Icon icon="lucide:chevron-right"/>
+                </template>
+                <BreadcrumbItem v-for="item in breadcrumbMap[activeMenuKey]">
+                  <Icon v-if="item.icon" :icon="item.icon"/>
+                  {{ item.title }}
+                </BreadcrumbItem>
+              </Breadcrumb>
+            </div>
           </Space>
         </div>
         <div class="right">
-          <Space size="middle">
-            门店信息 用户信息 用户下拉菜单
-            <Button @click="logout">退出登录</Button>
-          </Space>
+          <div class="store-box">
+            {{ storeName }}
+          </div>
+          <div class="full-screen-box">
+            <Icon class="full-screen-icon" icon="lucide:maximize" size="16px"/>
+          </div>
+          <div class="notice-box">
+            <Icon class="bell-icon" icon="lucide:bell" size="16px"/>
+            <div class="circle"></div>
+          </div>
+          <Button @click="logout">退出登录</Button>
         </div>
       </div>
       <div class="content">
         <div class="tab-box">
           <Tabs @change="handleTabChange" @edit="handleTabEdit" v-model:activeKey="activeKey" size="small"
-                type="editable-card" hide-add>
+                type="editable-card" hide-add :tabBarStyle="{paddingLeft: '10px', marginTop: '2px'}">
             <TabPane v-for="item in tabs" :key="item.key" :tab="item.tab" :closable="tabs && tabs.length > 1">
               <!--              <template #closeIcon>-->
               <!--                <div class="tab-remove">-->
@@ -336,6 +367,10 @@ const handleTabEdit = (val: any, option: any) => {
 
   .header {
     padding-left: 14px;
+    border-bottom: 1px solid rgb(54, 54, 58);
+    /*height: 56px;
+    line-height: 56px;*/
+    padding-bottom: 8px;
 
     .left {
       display: flex;
@@ -353,9 +388,148 @@ const handleTabEdit = (val: any, option: any) => {
     .tab-box {
       height: 40px;
       line-height: 40px;
-
-
+      /*padding-left: 10px;*/
     }
+  }
+}
+
+/* 菜单按钮 */
+.menu-switch-box {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  margin-right: 5px;
+
+  .menu-switch {
+    margin: 7px;
+  }
+}
+
+.menu-switch-box:hover {
+  background-color: rgb(54, 54, 58);
+  border-radius: 5px; /* 关键属性：生成圆形 */
+}
+
+/* 刷新按钮 */
+.refresh-box {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  margin-right: 5px;
+
+  .refresh {
+    margin: 7px;
+  }
+}
+
+.refresh-box:hover {
+  background-color: rgb(54, 54, 58);
+  border-radius: 5px; /* 关键属性：生成圆形 */
+}
+
+/**/
+.breadcrumb-box {
+  margin-left: 8px;
+}
+
+/* 门店信息 */
+.store-box {
+  height: 30px;
+  line-height: 30px;
+  margin-right: 5px;
+  cursor: pointer;
+  padding: 0 12px;
+}
+
+.store-box:hover {
+  background-color: rgb(54, 54, 58);
+  border-radius: 15px; /* 关键属性：生成圆形 */
+}
+
+/* 全屏按钮 */
+.full-screen-box {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  margin-right: 5px;
+
+  .full-screen-icon {
+    margin: 7px;
+  }
+}
+
+.full-screen-box:hover {
+  background-color: rgb(54, 54, 58);
+  border-radius: 50%; /* 关键属性：生成圆形 */
+}
+
+/* 消息通知，铃铛摇晃动画 */
+.notice-box {
+  position: relative; /* 父容器需设置为相对定位 */
+  /*padding-right: 4px;*/
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  margin-right: 12px;
+
+  .circle {
+    position: absolute; /* 绝对定位 */
+    top: -2px; /* 距离顶部距离 */
+    right: 1px; /* 距离右侧距离 */
+
+    width: 8px; /* 圆形直径 */
+    height: 8px; /* 与宽度相等 */
+    background: #007bff; /* 蓝色背景 */
+    border-radius: 50%; /* 关键属性：生成圆形 */
+  }
+}
+
+.notice-box:hover {
+  background-color: rgb(54, 54, 58);
+  border-radius: 50%; /* 关键属性：生成圆形 */
+}
+
+.bell-icon {
+  cursor: pointer;
+  /* 设置旋转中心点为顶部中心，模拟悬挂效果 */
+  transform-origin: top center;
+  transition: transform 0.3s ease;
+  margin: 7px;
+}
+
+/* 悬停时触发动画 */
+.bell-icon:hover {
+  animation: shake 0.8s infinite;
+}
+
+/* 关键帧动画 */
+@keyframes shake {
+  0%, 100% {
+    transform: rotateZ(0deg);
+  }
+  10% {
+    transform: rotateZ(-12deg);
+  }
+  20% {
+    transform: rotateZ(12deg);
+  }
+  28% {
+    transform: rotateZ(-10deg);
+  }
+  36% {
+    transform: rotateZ(10deg);
+  }
+  42% {
+    transform: rotateZ(-8deg);
+  }
+  48% {
+    transform: rotateZ(8deg);
+  }
+  52% {
+    transform: rotateZ(-4deg);
+  }
+  56% {
+    transform: rotateZ(4deg);
   }
 }
 </style>

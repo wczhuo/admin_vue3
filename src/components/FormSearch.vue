@@ -208,7 +208,7 @@ defineExpose({setValues, resetForm, setFieldValue, formApi});
           <Button type="primary" @click="onSubmit">查询</Button>
           <Button style="margin-left: 12px" @click="resetForm">重置</Button>
           <span v-if="showCollapseButton" style="margin-left: 12px" class="form-collapse" @click="handleCollapse">
-            {{ formCollapse ? '收起' : '展开' }}
+            {{ formCollapse ? '展开' : '收起' }}
           </span>
         </div>
       </Form>

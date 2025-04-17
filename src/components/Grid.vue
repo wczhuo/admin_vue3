@@ -8,7 +8,7 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  formConfig:{
+  formConfig: {
     type: Object,
     default: () => ({
       formItemClass: 'col-span-1',
@@ -69,7 +69,7 @@ console.log('props.formConfig', props.formConfig);
       <FormSearch v-bind="props.formConfig"></FormSearch>
     </div>
     <div class="w-full divider"></div>
-    <div class="form-container">
+    <div class="table-container">
       <vxe-table :data="tableData">
         <vxe-column type="seq" width="70"></vxe-column>
         <vxe-column field="name" title="Name"></vxe-column>
@@ -81,12 +81,17 @@ console.log('props.formConfig', props.formConfig);
 </template>
 
 <style scoped>
-  .form-container{
-    padding-top: 2px;
-    padding-right: 12px;
-  }
-  .divider {
-    height: 12px;
-    background-color: rgb(20, 20, 20);
-  }
+.form-container {
+  padding-top: 6px;
+  padding-right: 12px;
+}
+
+.divider {
+  height: 12px;
+  background-color: rgb(20, 20, 20);
+}
+
+.table-container {
+  padding: 8px;
+}
 </style>
