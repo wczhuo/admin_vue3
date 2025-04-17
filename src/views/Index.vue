@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import {ref, h, onMounted} from 'vue';
+import {ref, h, onMounted, onBeforeMount} from 'vue';
 import {
   Menu,
   Tabs,
   TabPane,
-  Button,
   Breadcrumb,
   BreadcrumbItem,
   Space,
   Avatar,
   Dropdown,
-  MenuItem, message
+  message
 } from 'ant-design-vue';
 import type {MenuTheme} from 'ant-design-vue';
 import {generateRoutes, getAllMenus} from "@/router";
@@ -74,15 +73,16 @@ const generateBreadcrumbMap = (items?: any[], map?: any[]): void => {
       }
   );
 };
-console.log('1');
 const menus: any = ref([]);
 const items: any = ref([]);
 const currentRoute: any = ref({});
+const show = ref(false);
 // const router: any = ref({});
-onMounted(async () => {
-  await generateRoutes();
+onBeforeMount(async () => {
+  // menus.value = await generateRoutes();
 
   menus.value = await getAllMenus();
+  show.value = true;
   // 生成面包屑映射，路由id->面包屑数组
   generateBreadcrumbMap(menus.value as any, []);
   // 生成树形结构的菜单
@@ -93,14 +93,8 @@ onMounted(async () => {
   router.push(currentRoute.value.route.length > 0 ? currentRoute.value.route : defaultPage);
   activeKey.value = currentRoute.value.route.length > 0 ? currentRoute.value.key : defaultPageKey;
   activeMenuKey.value = currentRoute.value.route.length > 0 ? currentRoute.value.key : defaultPageKey;
-  // console.log('items', items);
-  console.log('3');
 });
-console.log('4');
 
-// console.log('breadcrumbMap', breadcrumbMap);
-// console.log('routeMap', routeMap);
-// console.log('currentRoute', currentRoute);
 const defaultPage = '/dashboard/analysis';
 const defaultPageKey = '2';
 const tabs = ref(getTabs());
@@ -214,7 +208,7 @@ const getPopupContainer = () => {
 </script>
 
 <template>
-  <div class="index-container flex-row">
+  <div class="index-container flex-row" v-show="show">
     <div class="left-sidebar flex-column">
       <div class="header flex-row">
         <img class="logo" :src="siteInfo.logo" alt="logo">

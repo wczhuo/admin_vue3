@@ -1,7 +1,7 @@
 import {createApp} from 'vue'
 import './style.css'
 import App from './App.vue'
-import router from './router'
+import router, {generateRoutes} from './router'
 import '@/assets/scss/global.scss';
 // import 'iconify-icon';
 import {Icon} from '@iconify/vue';
@@ -19,6 +19,9 @@ import 'vxe-table/lib/style.css'
 // VxeUI.use(VxeUIPluginRenderAntd, {
 //     prefixCls: 'Antd'
 // });
+
+// 加载动态路由
+await generateRoutes();
 
 const app = createApp(App);
 

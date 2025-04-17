@@ -6,6 +6,7 @@ import {ConfigProvider, message} from 'ant-design-vue';
 // import HomeView from '@/views/HomeView.vue'
 
 import {theme} from 'ant-design-vue';
+import {ref} from "vue";
 
 const {darkAlgorithm} = theme;
 // 设置message样式
@@ -14,23 +15,22 @@ ConfigProvider.config({
     // theme: defaultAlgorithm,
 });
 
-let menus: any;
-console.log('isLogin()', isLogin());
-if (isLogin()) {
-    const hide = message.loading('加载菜单中...', 0);
-    menus = (await getAllMenusApi() as any)?.result;
-    console.log('menus 1', menus);
-    hide();
-}
+const menus: any = ref([]);
+// console.log('isLogin()', isLogin());
+// if (isLogin()) {
+//     const hide = message.loading('加载菜单中...', 0);
+//     menus = (await getAllMenusApi() as any)?.result;
+//     console.log('menus 1', menus);
+//     hide();
+// }
 
 const getAllMenus = async () => {
-    // if (menus) {
-    //     generateItems(menus);
-    //     return menus;
-    // }
+    if (menus.value?.length > 0) {
+        return menus.value;
+    }
     if (isLogin()) {
         const hide = message.loading('加载菜单中...', 0);
-        menus = (await getAllMenusApi() as any)?.result;
+        const menus = (await getAllMenusApi() as any)?.result;
         console.log('menus 2', menus);
         hide();
         generateItems(menus);
@@ -55,6 +55,8 @@ const generateItems = (items?: any[]): any[] => {
             routesApi.push({
                 path: item.path.substring(0, 1) == '/' ? item.path.substring(1) : item.path,
                 name: item?.name,
+                // component: item?.component,
+                // component: () => import(`@/views${item.component}.vue`), // 懒加载
                 component: getViews(item), // 懒加载
                 // children: item?.children?.length > 0 ? generateItems(item.children) : undefined
             });
@@ -64,16 +66,16 @@ const generateItems = (items?: any[]): any[] => {
         }
     });
 };
-if (menus) {
-    generateItems(menus);
-}
+// if (menus) {
+//     generateItems(menus);
+// }
 
 export const addDynamicRoutes = (routes: any) => {
     routes.forEach((route: any) => {
         router.addRoute('Index123', {
             path: route.path,
             name: route.name,
-            component: () => import(`@/views/${route.component}.vue`),
+            component: route.component,
             meta: {requiresAuth: true},
             children: route.children || [] // 支持嵌套路由
         });
@@ -87,11 +89,13 @@ export const addDynamicRoutes = (routes: any) => {
 };
 
 const generateRoutes = async () => {
-    menus = await getAllMenus();
-    console.log('generateRoutes menus', menus);
-    generateItems(menus);
+    menus.value = await getAllMenus();
+    // console.log('generateRoutes menus', menus);
+    generateItems(menus.value);
 
     addDynamicRoutes(routesApi);
+
+    return menus.value;
 }
 
 // 定义路由类型增强安全性
@@ -106,7 +110,15 @@ const routes: Array<RouteRecordRaw> = [
         name: 'Index123',
         component: () => import('@/views/Index.vue'), // 懒加载
         meta: {requiresAuth: true}, // 添加路由元信息
-        children: [...routesApi],
+        // children: [...routesApi],
+        children: [
+            {
+                path: '/dashboard/analysis',
+                name: 'DashboardAnalysis',
+                component: () => import('@/views/dashboard/analytics/index.vue'), // 懒加载
+                meta: {requiresAuth: true}, // 添加路由元信息
+            }
+        ],
     }
 ]
 // console.log('routes', routes);
@@ -130,5 +142,5 @@ router.beforeEach((to, __from, next) => {
 
 // const router = await generateRoutes();
 
-export {menus, getAllMenus, generateRoutes};
+export {getAllMenus, generateRoutes};
 export default router
