@@ -5,6 +5,7 @@ import {VxeUI} from "vxe-table";
 
 defineOptions({name: 'App'});
 
+// ant-design-vue的主题
 const {darkAlgorithm, defaultAlgorithm} = theme;
 const isDark = ref(true); // 通过状态控制暗黑模式
 
@@ -29,18 +30,4 @@ VxeUI.setTheme('dark');
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
 </style>
