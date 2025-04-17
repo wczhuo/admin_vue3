@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, h} from 'vue';
+import {ref, h, onMounted} from 'vue';
 import {
   Menu,
   Tabs,
@@ -10,15 +10,15 @@ import {
   Space,
   Avatar,
   Dropdown,
-  MenuItem
+  MenuItem, message
 } from 'ant-design-vue';
 import type {MenuTheme} from 'ant-design-vue';
+import {generateRoutes, getAllMenus} from "@/router";
 import router from "@/router";
-import {menus} from "@/router";
 import {getInitData} from "@/api/core/site.ts";
 import {getSiteInfo, setSiteInfo} from "@/utils/tools.ts";
 import Icon from "@/components/Icon.vue";
-import {getUserInfoApi, setUserInfo, userInfo} from "@/api/core/auth.ts";
+import {getUserInfoApi, logoutApi, setUserInfo, userInfo} from "@/api/core/auth.ts";
 
 const theme = ref<MenuTheme>('dark');
 const selectedKeys = ref(<any>[]);
@@ -74,14 +74,33 @@ const generateBreadcrumbMap = (items?: any[], map?: any[]): void => {
       }
   );
 };
-// 生成面包屑映射，路由id->面包屑数组
-generateBreadcrumbMap(menus?.result as any, []);
+console.log('1');
+const menus: any = ref([]);
+const items: any = ref([]);
+const currentRoute: any = ref({});
+// const router: any = ref({});
+onMounted(async () => {
+  await generateRoutes();
+
+  menus.value = await getAllMenus();
+  // 生成面包屑映射，路由id->面包屑数组
+  generateBreadcrumbMap(menus.value as any, []);
+  // 生成树形结构的菜单
+  items.value = ref(generateItems(menus.value as any));
+  // 获取当前路由
+  currentRoute.value = getCurrentRoute();
+
+  router.push(currentRoute.value.route.length > 0 ? currentRoute.value.route : defaultPage);
+  activeKey.value = currentRoute.value.route.length > 0 ? currentRoute.value.key : defaultPageKey;
+  activeMenuKey.value = currentRoute.value.route.length > 0 ? currentRoute.value.key : defaultPageKey;
+  // console.log('items', items);
+  console.log('3');
+});
+console.log('4');
 
 // console.log('breadcrumbMap', breadcrumbMap);
 // console.log('routeMap', routeMap);
-// 获取当前路由
-const currentRoute = getCurrentRoute();
-console.log('currentRoute', currentRoute);
+// console.log('currentRoute', currentRoute);
 const defaultPage = '/dashboard/analysis';
 const defaultPageKey = '2';
 const tabs = ref(getTabs());
@@ -103,29 +122,25 @@ const generateItems = (items?: any[]): any[] => {
       }
   ));
 };
-// 生成树形结构的菜单
-const items = ref(generateItems(menus?.result as any));
-router.push(currentRoute.route.length > 0 ? currentRoute.route : defaultPage);
-activeKey.value = currentRoute.route.length > 0 ? currentRoute.key : defaultPageKey;
-activeMenuKey.value = currentRoute.route.length > 0 ? currentRoute.key : defaultPageKey;
-// console.log('items', items);
 
 const handleTabChange = (tab: any) => {
-  // console.log('tab', tab, option);
-  // router.push(tab);
   tabs.value.forEach((item: any) => {
     if (item.key === tab) {
       // 切换路由
-      console.log('tab', tab, item);
       router.push(item.path);
     }
   });
 }
 // 退出登录
 const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('userInfo');
-  router.push('/login');
+  const hide = message.loading('退出登录中...', 0);
+  logoutApi().then((__data: any) => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userInfo');
+  }).finally(() => {
+    hide();
+    router.push('/login');
+  });
 }
 // 获取登录管理员信息
 getUserInfoApi().then((data: any) => {
@@ -212,7 +227,7 @@ const getPopupContainer = () => {
             style="width: 100%;"
             mode="inline"
             :theme="theme"
-            :items="items"
+            :items="items.value"
             @click="handleMenuItem"
             :inlineIndent="16"
         />
@@ -259,7 +274,9 @@ const getPopupContainer = () => {
                 <div class="user-menu">
                   <div class="user-menu-item" key="1">
                     <div class="flex-row">
-                      <div class="avatar"><Avatar :size="40" :src="userInfo()?.avatar"/></div>
+                      <div class="avatar">
+                        <Avatar :size="40" :src="userInfo()?.avatar"/>
+                      </div>
                       <div class="info flex-column">
                         <div class="nickname">{{ userInfo()?.nickname }}</div>
                         <div class="email">{{ userInfo()?.email }}</div>
@@ -284,7 +301,7 @@ const getPopupContainer = () => {
                       个人信息
                     </Space>
                   </div>
-                  <div class="user-menu-item" key="9">
+                  <div class="user-menu-item" key="9" @click="logout">
                     <Space :size="2">
                       <Icon class="icon" icon="lucide:log-out"></Icon>
                       退出登录
@@ -487,12 +504,15 @@ const getPopupContainer = () => {
     .avatar {
       margin: 10px 10px 10px 0;
     }
+
     .info {
       margin-left: 6px;
+
       .nickname {
         height: 30px;
         margin-top: 8px;
       }
+
       .email {
         height: 30px;
         margin-top: -10px;

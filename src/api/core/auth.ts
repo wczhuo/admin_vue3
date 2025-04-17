@@ -7,6 +7,16 @@ export async function loginApi(data: any) {
     return request.post('/auth/login', data);
 }
 
+/**
+ * 退出登录
+ */
+export async function logoutApi() {
+    // return baseRequestClient.post('/auth/logout', {
+    //   withCredentials: true,
+    // });
+    return request.post('/auth/logout');
+}
+
 export function isLogin(): boolean {
     return !!localStorage.getItem('token');
 }
