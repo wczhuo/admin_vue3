@@ -5,6 +5,8 @@ import router, {generateRoutes} from './router'
 import '@/assets/scss/global.scss';
 // import 'iconify-icon';
 import {Icon} from '@iconify/vue';
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'    // 引入默认样式
 
 // ...
 import VxeUI from 'vxe-pc-ui'
@@ -26,5 +28,7 @@ await generateRoutes();
 const app = createApp(App);
 
 app.component('iconify-icon', Icon);
+
+app.use(ElementPlus);
 
 app.use(router).use(VxeUI).use(VxeUITable).mount('#app');

@@ -1,13 +1,20 @@
 import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path';
+import Components from 'unplugin-vue-components/vite';
+import RadixVueResolver from 'radix-vue/resolver';
 
 // 在控制台输出
 // console.log('__dirname', __dirname);
 
 // https://vite.dev/config/
 export default defineConfig(({mode}) => ({
-    plugins: [vue()],
+    plugins: [
+        vue(),
+        // Components({
+        //     resolvers: [RadixVueResolver()], // 自动解析 Radix Vue 组件
+        // }),
+    ],
 
     server: {
         port: 3000, // 自己规定的端口号

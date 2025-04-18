@@ -64,6 +64,8 @@ const activeTabKey = ref('');
 const activeMenuKey = ref('');
 // 面包屑映射
 const breadcrumbMap = ref(<Record<string, any>>{});
+// 菜单映射
+const menuMap = ref(<Record<string, any>>{});
 // 路由映射
 const routeMap = ref(<Record<string, any>>{});
 // 生成面包屑映射
@@ -76,6 +78,7 @@ const generateBreadcrumbMap = (items?: any[], map?: any[]): void => {
         }
         breadcrumbMap.value[item.id].push({title: item?.meta?.title, icon: item?.meta?.icon, path: item.path});
         routeMap.value[item.path] = item;
+        menuMap.value[item.id] = item;
         // breadcrumbMap.value[item.id] = map;
         generateBreadcrumbMap(item.children, breadcrumbMap.value[item.id]);
       }
@@ -145,27 +148,29 @@ getUserInfoApi().then((data: any) => {
   storeName.value = data?.result?.currentStoreName;
 });
 const handleMenuItem = (item: any) => {
+  const menuItem = menuMap.value[item];
+  // return;
   // 查找tab选项卡是否已经打开
   let find = false;
   tabs.value.forEach((tab: any) => {
-    if (tab.key == item.key) {
+    if (tab.key == menuItem.id) {
       find = true;
     }
   });
   // 未打开
   if (!find) {
     tabs.value.push({
-      key: item.key,
-      tab: item.item.title,
-      path: item.item.path,
+      key: menuItem.id,
+      tab: menuItem.meta.title,
+      path: menuItem.path,
     });
     setTabs();
   }
   // 设置激活的菜单项和选项卡
-  activeTabKey.value = item.key;
-  activeMenuKey.value = item.key;
+  activeTabKey.value = menuItem.id;
+  activeMenuKey.value = menuItem.id;
   // 路由跳转
-  router.push(item.item.path);
+  router.push(menuItem.path);
 }
 // 获取站点基础信息
 const siteInfo = ref<any>(getSiteInfo());
@@ -192,33 +197,89 @@ const handleTabEdit = (val: any, option: any) => {
 const getPopupContainer = () => {
   return document.getElementsByClassName('user-box')[0] as HTMLElement;
 }
+
+const isCollapse = ref(false);
+const isShowSideBar = ref(true);
+const handleSideBarCollapse = () => {
+  isShowSideBar.value = !isShowSideBar.value;
+}
+const handleOpen = () => {
+
+}
+const handleClose = () => {
+
+}
+const handleMenuCollapse = () => {
+  isCollapse.value = !isCollapse.value;
+}
 </script>
 
 <template>
   <div class="index-container flex-row" v-show="showIndexContainer">
-    <div class="left-sidebar flex-column">
+    <div class="left-sidebar flex-column" :style="{width: isCollapse ? '60px' : '224px'}" v-show="isShowSideBar">
       <div class="header flex-row">
         <img class="logo" :src="siteInfo.logo" alt="logo">
-        <span class="title">{{ siteInfo.name }}</span>
+        <span class="title" v-if="!isCollapse">{{ siteInfo.name }}</span>
       </div>
       <div class="menu">
-        <Menu
-            v-model:openKeys="menuOpenKeys"
-            v-model:selectedKeys="menuSelectedKeys"
-            style="width: 100%;"
-            mode="inline"
-            :theme="menuTheme"
-            :items="menuItems.value"
-            @click="handleMenuItem"
-            :inlineIndent="16"
-        />
+        <el-scrollbar>
+          <!--          <Menu v-if="false"-->
+          <!--                v-model:openKeys="menuOpenKeys"-->
+          <!--                v-model:selectedKeys="menuSelectedKeys"-->
+          <!--                style="width: 100%;"-->
+          <!--                mode="inline"-->
+          <!--                :theme="menuTheme"-->
+          <!--                :items="menuItems.value"-->
+          <!--                @click="handleMenuItem"-->
+          <!--                :inlineIndent="16"-->
+          <!--          />-->
+          <el-menu
+              default-active="2"
+              class="el-menu-vertical-demo"
+              :collapse="isCollapse"
+              @open="handleOpen"
+              @close="handleClose"
+              :unique-opened="true"
+              background-color="#1C1E23"
+              text-color="white"
+              @select="handleMenuItem"
+          >
+            <template v-for="(item) in menuItems.value">
+              <template v-if="item?.children && item?.children.length > 0">
+                <el-sub-menu :index="item.key">
+                  <template #title>
+                    <Component :is="item.icon"></Component>
+                    <span>{{ item.title }}</span>
+                  </template>
+                  <el-menu-item :index="child.key" v-for="(child) in item.children">
+                    <Component :is="child.icon"></Component>
+                    <span>{{ child.title }}</span>
+                  </el-menu-item>
+                </el-sub-menu>
+              </template>
+              <template v-else>
+                <el-menu-item :index="item.key">
+                  <Component :is="item.icon"></Component>
+                  <template #title>{{ item.title }}</template>
+                </el-menu-item>
+              </template>
+            </template>
+          </el-menu>
+        </el-scrollbar>
+      </div>
+      <div class="footer">
+        <div class="collapse-box" @click="handleMenuCollapse">
+          <Icon class="collapse-icon" v-if="isCollapse" icon="lucide:chevrons-right"></Icon>
+          <Icon class="collapse-icon" v-else icon="lucide:chevrons-left"></Icon>
+        </div>
       </div>
     </div>
-    <div class="right-container flex-column">
+    <!--  TODO: 增加效果  -->
+    <div class="right-container flex-column" :style="{width: isShowSideBar ? 'calc(100% - 224px)' : '100%'}">
       <div class="header flex-row">
         <div class="left">
           <Space :size="0">
-            <div class="menu-switch-box">
+            <div class="menu-switch-box" @click="handleSideBarCollapse">
               <Icon class="menu-switch" icon="lucide:menu"/>
             </div>
             <div class="refresh-box">
@@ -334,11 +395,12 @@ const getPopupContainer = () => {
 .left-sidebar {
   width: 224px;
   height: 100vh;
-  overflow-y: auto;
-  scrollbar-gutter: stable;
-  scrollbar-color: #000B16 #1C1E23;
   background-color: #1C1E23;
   border-right: 1px solid rgb(54, 54, 58);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  flex-basis: 224px;
+  unicode-bidi: isolate;
 
   .header {
     height: 40px;
@@ -361,13 +423,63 @@ const getPopupContainer = () => {
   }
 
   .menu {
-    height: calc(100vh - 40px);
+    height: calc(100vh - 80px);
     padding-top: 14px;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    scrollbar-color: #000B16 #1C1E23;
+
+    .el-menu {
+      border: none;
+    }
+  }
+
+  .footer {
+    height: 40px;
+
+    .collapse-box {
+      width: 30px;
+      height: 30px;
+      background-color: rgb(36, 36, 36);
+      border-radius: 5px;
+      margin-left: 15px;
+
+      .collapse-icon {
+        margin: 7px;
+      }
+    }
   }
 
   .ant-menu-sub {
     background: transparent !important;
   }
+}
+
+/* WebKit 样式 */
+.menu::-webkit-scrollbar {
+  width: 1px;
+  background: transparent;
+}
+
+.menu::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.menu:hover::-webkit-scrollbar-thumb {
+  background-color: #888;
+}
+
+/* Firefox 样式 */
+.menu {
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+}
+
+.menu:hover {
+  scrollbar-color: #888 transparent;
 }
 
 .ant-menu-item {
@@ -416,6 +528,8 @@ const getPopupContainer = () => {
 .right-container {
   width: calc(100% - 224px);
   padding-top: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 1, 1);
+  unicode-bidi: isolate;
 
   .header {
     padding-left: 14px;
@@ -558,7 +672,7 @@ const getPopupContainer = () => {
   margin-right: 5px;
 
   .full-screen-icon {
-    margin: 7px;
+    padding: 7px;
   }
 }
 
