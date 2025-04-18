@@ -203,8 +203,8 @@ const handleMenuCollapse = () => {
 
 <template>
   <div class="index-container flex-row" v-show="showIndexContainer">
-    <div class="left-sidebar flex-column" :style="{flex: isCollapse ? '0 0 60px' : '0 0 224px'}"
-         :class="{hiddenLeft: !isShowSideBar}">
+    <div class="left-sidebar flex-column"
+         :class="{hiddenLeft: !isShowSideBar, collapseLeft60: isCollapse, collapseLeft224: !isCollapse}">
       <div class="header flex-row">
         <img class="logo" :src="siteInfo.logo" alt="logo">
         <span class="title" v-if="!isCollapse">{{ siteInfo.name }}</span>
@@ -513,6 +513,15 @@ const handleMenuCollapse = () => {
 }
 
 /* 动画触发状态 */
+
+.left-sidebar.collapseLeft60 {
+  flex: 0 0 60px;
+}
+
+.left-sidebar.collapseLeft224 {
+  flex: 0 0 224px;
+}
+
 .left-sidebar.hiddenLeft {
   flex-basis: 0;
   opacity: 0;
