@@ -3,8 +3,6 @@ import {createRouter, createWebHistory, type RouteRecordRaw} from 'vue-router'
 import {getAllMenusApi} from "@/api/core/menu.ts";
 import {isLogin} from "@/api/core/auth.ts";
 import {ConfigProvider, message} from 'ant-design-vue';
-// import HomeView from '@/views/HomeView.vue'
-
 import {theme} from 'ant-design-vue';
 import {ref} from "vue";
 
@@ -16,13 +14,6 @@ ConfigProvider.config({
 });
 
 const menus: any = ref([]);
-// console.log('isLogin()', isLogin());
-// if (isLogin()) {
-//     const hide = message.loading('加载菜单中...', 0);
-//     menus = (await getAllMenusApi() as any)?.result;
-//     console.log('menus 1', menus);
-//     hide();
-// }
 
 const getAllMenus = async () => {
     if (menus.value?.length > 0) {
@@ -31,44 +22,39 @@ const getAllMenus = async () => {
     if (isLogin()) {
         const hide = message.loading('加载菜单中...', 0);
         const menus = (await getAllMenusApi() as any)?.result;
-        console.log('menus 2', menus);
         hide();
-        generateItems(menus);
+        generateRouterItems(menus);
         return menus;
     }
     return [];
 }
 
 let modules = import.meta.glob('../views/**/**/*.vue');
-// console.log('modules', modules);
 
 const getViews = (item: any) => {
     return modules[item.component == 'LAYOUT' ? `../views/Index.vue` : `../views${item.component}.vue`];
 }
-let routesApi: any[] = [];
+const routesApi = ref(<object[]>[]);
 
-const generateItems = (items?: any[]): any[] => {
+const generateRouterItems = (items?: any[]): any[] => {
     if (!items) return [];
 
     return items.map((item) => {
         if (item.component !== 'LAYOUT') {
-            routesApi.push({
+            routesApi.value.push({
                 path: item.path.substring(0, 1) == '/' ? item.path.substring(1) : item.path,
                 name: item?.name,
                 // component: item?.component,
                 // component: () => import(`@/views${item.component}.vue`), // 懒加载
                 component: getViews(item), // 懒加载
-                // children: item?.children?.length > 0 ? generateItems(item.children) : undefined
+                // children: item?.children?.length > 0 ? generateRouterItems(item.children) : undefined
             });
         }
         if (item?.children?.length > 0) {
-            generateItems(item.children);
+            generateRouterItems(item.children);
         }
     });
 };
-// if (menus) {
-//     generateItems(menus);
-// }
 
 export const addDynamicRoutes = (routes: any) => {
     routes.forEach((route: any) => {
@@ -89,12 +75,15 @@ export const addDynamicRoutes = (routes: any) => {
 };
 
 const generateRoutes = async () => {
-    menus.value = await getAllMenus();
-    // console.log('generateRoutes menus', menus);
-    generateItems(menus.value);
+    // console.log('routesApi.value', routesApi.value);
+    if (routesApi.value.length == 0) {
+        menus.value = await getAllMenus();
+        // console.log('generateRoutes menus', menus);
+        generateRouterItems(menus.value);
+        addDynamicRoutes(routesApi.value);
 
-    addDynamicRoutes(routesApi);
-
+        return menus.value;
+    }
     return menus.value;
 }
 
@@ -110,7 +99,7 @@ const routes: Array<RouteRecordRaw> = [
         name: 'Index123',
         component: () => import('@/views/Index.vue'), // 懒加载
         meta: {requiresAuth: true}, // 添加路由元信息
-        // children: [...routesApi],
+        // children: [...routesApi.value],
         children: [
             {
                 path: '/dashboard/analysis',

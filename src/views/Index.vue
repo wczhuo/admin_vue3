@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, h, onMounted, onBeforeMount} from 'vue';
+import {ref, h, onBeforeMount} from 'vue';
 import {
   Menu,
   Tabs,
@@ -12,17 +12,23 @@ import {
   message
 } from 'ant-design-vue';
 import type {MenuTheme} from 'ant-design-vue';
-import {generateRoutes, getAllMenus} from "@/router";
+import {generateRoutes} from "@/router";
 import router from "@/router";
 import {getInitData} from "@/api/core/site.ts";
 import {getSiteInfo, setSiteInfo} from "@/utils/tools.ts";
 import Icon from "@/components/Icon.vue";
 import {getUserInfoApi, logoutApi, setUserInfo, userInfo} from "@/api/core/auth.ts";
 
-const theme = ref<MenuTheme>('dark');
-const selectedKeys = ref(<any>[]);
-const openKeys = ref(<any>[]);
+// 主题
+const menuTheme = ref<MenuTheme>('dark');
+const menuSelectedKeys = ref(<any>[]);
+const menuOpenKeys = ref(<any>[]);
 const storeName = ref<string>();
+const menus: any = ref([]);
+const menuItems: any = ref([]);
+const currentRoute: any = ref({});
+const showIndexContainer = ref(false);
+
 // 选项卡，最后一个选项卡不允许关闭
 const setTabs = () => {
   localStorage.setItem('tabs', JSON.stringify(tabs.value));
@@ -39,18 +45,21 @@ const getTabs = () => {
   }
   return temp;
 }
+
+const defaultPage = '/dashboard/analysis';
+const defaultPageKey = '2';
+const tabs = ref(getTabs());
 const getCurrentRoute = () => {
   const route = location.pathname;
   if (routeMap.value[route] == undefined) {
     return {route: defaultPage, key: defaultPageKey};
   } else {
-    // console.log('location', location);
     return {route: location.pathname, key: routeMap.value[location.pathname]?.id};
   }
 }
 
 // 当前激活选中的选项卡key
-const activeKey = ref('');
+const activeTabKey = ref('');
 // 当前激活选中的菜单key
 const activeMenuKey = ref('');
 // 面包屑映射
@@ -62,7 +71,6 @@ const generateBreadcrumbMap = (items?: any[], map?: any[]): void => {
   if (!items) return;
 
   items.forEach(item => {
-        // map?.push({title: item?.meta?.title, icon: item?.meta?.icon});
         if (map) {
           breadcrumbMap.value[item.id] = [...map];
         }
@@ -73,31 +81,26 @@ const generateBreadcrumbMap = (items?: any[], map?: any[]): void => {
       }
   );
 };
-const menus: any = ref([]);
-const items: any = ref([]);
-const currentRoute: any = ref({});
-const show = ref(false);
-// const router: any = ref({});
 onBeforeMount(async () => {
-  // menus.value = await generateRoutes();
+  // 生成路由并返回菜单
+  menus.value = await generateRoutes();
 
-  menus.value = await getAllMenus();
-  show.value = true;
+  // menus.value = await getAllMenus();
+  // 显示容器
+  showIndexContainer.value = true;
   // 生成面包屑映射，路由id->面包屑数组
   generateBreadcrumbMap(menus.value as any, []);
   // 生成树形结构的菜单
-  items.value = ref(generateItems(menus.value as any));
+  menuItems.value = ref(generateItems(menus.value as any));
   // 获取当前路由
   currentRoute.value = getCurrentRoute();
 
-  router.push(currentRoute.value.route.length > 0 ? currentRoute.value.route : defaultPage);
-  activeKey.value = currentRoute.value.route.length > 0 ? currentRoute.value.key : defaultPageKey;
-  activeMenuKey.value = currentRoute.value.route.length > 0 ? currentRoute.value.key : defaultPageKey;
+  // 跳转路由
+  router.push(currentRoute.value.route);
+  // 设置激活的菜单项和选项卡
+  activeTabKey.value = currentRoute.value.key;
+  activeMenuKey.value = currentRoute.value.key;
 });
-
-const defaultPage = '/dashboard/analysis';
-const defaultPageKey = '2';
-const tabs = ref(getTabs());
 
 // 生成树形结构的菜单
 const generateItems = (items?: any[]): any[] => {
@@ -138,27 +141,19 @@ const logout = () => {
 }
 // 获取登录管理员信息
 getUserInfoApi().then((data: any) => {
-  console.log('getUserInfoApi', data);
-  // loading.value = false;
-  // localStorage.setItem('userInfo', JSON.stringify(data?.result));
   setUserInfo(data?.result);
   storeName.value = data?.result?.currentStoreName;
 });
 const handleMenuItem = (item: any) => {
-  // console.log('handleMenuItem', item, tabs.value);
-  // 路由跳转
-  router.push(item.item.path);
-  //
+  // 查找tab选项卡是否已经打开
   let find = false;
   tabs.value.forEach((tab: any) => {
     if (tab.key == item.key) {
-      // console.log('find item', tab.key, item.item.key);
       find = true;
     }
   });
-  // console.log('find', find);
+  // 未打开
   if (!find) {
-    // console.log('find', item);
     tabs.value.push({
       key: item.key,
       tab: item.item.title,
@@ -166,24 +161,20 @@ const handleMenuItem = (item: any) => {
     });
     setTabs();
   }
-  activeKey.value = item.key;
-  // console.log('item', item, item.item);
+  // 设置激活的菜单项和选项卡
+  activeTabKey.value = item.key;
   activeMenuKey.value = item.key;
-  // console.log('item.item.path activeKey', item.item.path);
   // 路由跳转
   router.push(item.item.path);
 }
 // 获取站点基础信息
 const siteInfo = ref<any>(getSiteInfo());
 getInitData().then((data: any) => {
-  // console.log('data', data);
-  // loading.value = false;
   siteInfo.value = data?.result;
   setSiteInfo(data?.result);
 });
-
+// 删除tab选项卡
 const handleTabEdit = (val: any, option: any) => {
-  // console.log('handleTabEdit val', val, option);
   if (option === 'remove') {
     tabs.value.forEach((tab: any, index: number) => {
       if (tab.key === val) {
@@ -191,24 +182,20 @@ const handleTabEdit = (val: any, option: any) => {
         // 保存tabs
         setTabs();
         // 切换路由
-        // console.log('切换路由', tabs.value[Math.max(index- 1, 0)].key);
         router.push(tabs.value[Math.max(index - 1, 0)].path);
         // 切换菜单激活项
-        // console.log('selectedKeys.value', selectedKeys.value);
-        selectedKeys.value = [tabs.value[Math.max(index - 1, 0)].key];
+        menuSelectedKeys.value = [tabs.value[Math.max(index - 1, 0)].key];
       }
     });
   }
 }
 const getPopupContainer = () => {
-  // triggerNode => triggerNode.parentNode
-  // console.log('triggerNode', triggerNode);
   return document.getElementsByClassName('user-box')[0] as HTMLElement;
 }
 </script>
 
 <template>
-  <div class="index-container flex-row" v-show="show">
+  <div class="index-container flex-row" v-show="showIndexContainer">
     <div class="left-sidebar flex-column">
       <div class="header flex-row">
         <img class="logo" :src="siteInfo.logo" alt="logo">
@@ -216,12 +203,12 @@ const getPopupContainer = () => {
       </div>
       <div class="menu">
         <Menu
-            v-model:openKeys="openKeys"
-            v-model:selectedKeys="selectedKeys"
+            v-model:openKeys="menuOpenKeys"
+            v-model:selectedKeys="menuSelectedKeys"
             style="width: 100%;"
             mode="inline"
-            :theme="theme"
-            :items="items.value"
+            :theme="menuTheme"
+            :items="menuItems.value"
             @click="handleMenuItem"
             :inlineIndent="16"
         />
@@ -309,14 +296,9 @@ const getPopupContainer = () => {
       </div>
       <div class="content">
         <div class="tab-box">
-          <Tabs @change="handleTabChange" @edit="handleTabEdit" v-model:activeKey="activeKey" size="small"
+          <Tabs @change="handleTabChange" @edit="handleTabEdit" v-model:activeKey="activeTabKey" size="small"
                 type="editable-card" hide-add :tabBarStyle="{paddingLeft: '10px', marginTop: '2px'}">
             <TabPane v-for="item in tabs" :key="item.key" :tab="item.tab" :closable="tabs && tabs.length > 1">
-              <!--              <template #closeIcon>-->
-              <!--                <div class="tab-remove">-->
-              <!--                <Icon icon="ci:close-sm" style="color: #ff4d4f;"/>-->
-              <!--                </div>-->
-              <!--              </template>-->
             </TabPane>
           </Tabs>
         </div>

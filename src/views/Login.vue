@@ -2,7 +2,7 @@
 import {useTemplateRef, ref} from 'vue';
 import {Form, FormItem, Input, Button, message, Spin} from 'ant-design-vue';
 import {loginApi} from "@/api/core/auth.ts";
-import router from "@/router";
+import router, {generateRoutes} from "@/router";
 import SlideVerify from "@/components/SlideVerify.vue";
 import {getInitData} from "@/api/core/site.ts";
 import {getSiteInfo, setSiteInfo} from "@/utils/tools.ts";
@@ -12,6 +12,7 @@ const formLogin: any = useTemplateRef('formLogin');
 const loading = ref(false);
 const verifySuccess = ref(import.meta.env.DEV);
 const verifyWarning = ref(false);
+const showLoginForm = ref(true);
 
 // 获取站点基础信息
 const siteInfo = ref<any>(getSiteInfo());
@@ -58,10 +59,13 @@ const handleLogin = async () => {
   // console.log('result', result);
   loading.value = false;
   if (result?.result?.token) {
-    message.success('登录成功');
+    showLoginForm.value = false;
+    // message.success('登录成功');
     // 保存token和用户信息
     localStorage.setItem('token', result?.result?.token);
     localStorage.setItem('userInfo', JSON.stringify(result?.result));
+    // 加载路由和菜单
+    await generateRoutes();
     router.push('/');
     // router.push('/index');
   } else {
@@ -76,7 +80,7 @@ const slideVerifySuccess = () => {
 
 <template>
   <Spin :spinning="loading">
-    <div class="login-container">
+    <div class="login-container" v-show="showLoginForm">
       <Form ref="formLogin" class="login-form flex-column" :model="formState" :rules="rules" @finish="handleLogin">
         <FormItem name="username" class="row">
           <Input class="input" v-model:value="formState.username" placeholder="用户名"/>
