@@ -1,17 +1,6 @@
 <script setup lang="ts">
 import {ref, h, onBeforeMount} from 'vue';
-import {
-  Menu,
-  Tabs,
-  TabPane,
-  Breadcrumb,
-  BreadcrumbItem,
-  Space,
-  Avatar,
-  Dropdown,
-  message
-} from 'ant-design-vue';
-import type {MenuTheme} from 'ant-design-vue';
+import {Tabs, TabPane, Breadcrumb, BreadcrumbItem, Space, Avatar, Dropdown, message} from 'ant-design-vue';
 import {generateRoutes} from "@/router";
 import router from "@/router";
 import {getInitData} from "@/api/core/site.ts";
@@ -20,9 +9,7 @@ import Icon from "@/components/Icon.vue";
 import {getUserInfoApi, logoutApi, setUserInfo, userInfo} from "@/api/core/auth.ts";
 
 // 主题
-const menuTheme = ref<MenuTheme>('dark');
 const menuSelectedKeys = ref(<any>[]);
-const menuOpenKeys = ref(<any>[]);
 const storeName = ref<string>();
 const menus: any = ref([]);
 const menuItems: any = ref([]);
@@ -216,7 +203,8 @@ const handleMenuCollapse = () => {
 
 <template>
   <div class="index-container flex-row" v-show="showIndexContainer">
-    <div class="left-sidebar flex-column" :style="{width: isCollapse ? '60px' : '224px'}" v-show="isShowSideBar">
+    <div class="left-sidebar flex-column" :style="{flex: isCollapse ? '0 0 60px' : '0 0 224px'}"
+         :class="{hiddenLeft: !isShowSideBar}">
       <div class="header flex-row">
         <img class="logo" :src="siteInfo.logo" alt="logo">
         <span class="title" v-if="!isCollapse">{{ siteInfo.name }}</span>
@@ -274,8 +262,7 @@ const handleMenuCollapse = () => {
         </div>
       </div>
     </div>
-    <!--  TODO: 增加效果  -->
-    <div class="right-container flex-column" :style="{width: isShowSideBar ? 'calc(100% - 224px)' : '100%'}">
+    <div class="right-container flex-column" :class="{expandRight: !isShowSideBar}">
       <div class="header flex-row">
         <div class="left">
           <Space :size="0">
@@ -388,19 +375,19 @@ const handleMenuCollapse = () => {
 }
 
 .index-container {
+  display: flex;
   width: 100%;
   height: 100vh;
 }
 
 .left-sidebar {
-  width: 224px;
+  flex: 0 0 224px; /* 初始固定宽度 */
   height: 100vh;
   background-color: #1C1E23;
   border-right: 1px solid rgb(54, 54, 58);
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+  opacity 0.5s ease-out;
   overflow: hidden;
-  flex-basis: 224px;
-  unicode-bidi: isolate;
 
   .header {
     height: 40px;
@@ -525,11 +512,22 @@ const handleMenuCollapse = () => {
   border-radius: 3px;
 }
 
+/* 动画触发状态 */
+.left-sidebar.hiddenLeft {
+  flex-basis: 0;
+  opacity: 0;
+  margin-right: 0; /* 消除弹性盒间隙 */
+}
+
+.right-container.expandRight {
+  margin-left: 0; /* 同步补偿左侧收缩 */
+}
+
 .right-container {
+  flex: 1;
   width: calc(100% - 224px);
   padding-top: 8px;
   transition: all 0.3s cubic-bezier(0.4, 0, 1, 1);
-  unicode-bidi: isolate;
 
   .header {
     padding-left: 14px;
