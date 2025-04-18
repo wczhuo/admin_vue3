@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {ref, h, onBeforeMount} from 'vue';
 import {Tabs, TabPane, Breadcrumb, BreadcrumbItem, Space, Avatar, Dropdown, message} from 'ant-design-vue';
+import {ElScrollbar, ElMenu, ElSubMenu, ElMenuItem} from 'element-plus';
 import {generateRoutes} from "@/router";
 import router from "@/router";
 import {getInitData} from "@/api/core/site.ts";
@@ -86,7 +87,7 @@ onBeforeMount(async () => {
   currentRoute.value = getCurrentRoute();
 
   // 跳转路由
-  router.push(currentRoute.value.route);
+  await router.push(currentRoute.value.route);
   // 设置激活的菜单项和选项卡
   activeTabKey.value = currentRoute.value.key;
   activeMenuKey.value = currentRoute.value.key;
@@ -102,6 +103,7 @@ const generateItems = (items?: any[]): any[] => {
         redirect: item.redirect,
         // icon: item?.meta?.icon,
         icon: () => item?.meta?.icon ? h(Icon, {icon: item?.meta?.icon}) : null,
+        hasIcon: !!item?.meta?.icon,
         disabled: item?.disabled,
         label: item?.meta?.title,
         title: item?.meta?.title,
@@ -210,7 +212,7 @@ const handleMenuCollapse = () => {
         <span class="title" v-if="!isCollapse">{{ siteInfo.name }}</span>
       </div>
       <div class="menu">
-        <el-scrollbar>
+        <ElScrollbar>
           <!--          <Menu v-if="false"-->
           <!--                v-model:openKeys="menuOpenKeys"-->
           <!--                v-model:selectedKeys="menuSelectedKeys"-->
@@ -221,9 +223,9 @@ const handleMenuCollapse = () => {
           <!--                @click="handleMenuItem"-->
           <!--                :inlineIndent="16"-->
           <!--          />-->
-          <el-menu
+          <ElMenu
               default-active="2"
-              class="el-menu-vertical-demo"
+              class="el-menu-vertical-demo el-menu"
               :collapse="isCollapse"
               @open="handleOpen"
               @close="handleClose"
@@ -234,26 +236,28 @@ const handleMenuCollapse = () => {
           >
             <template v-for="(item) in menuItems.value">
               <template v-if="item?.children && item?.children.length > 0">
-                <el-sub-menu :index="item.key">
+                <ElSubMenu :index="item.key">
                   <template #title>
                     <Component :is="item.icon"></Component>
-                    <span>{{ item.title }}</span>
+                    <span class="title">{{ item.title }}</span>
                   </template>
-                  <el-menu-item :index="child.key" v-for="(child) in item.children">
+                  <ElMenuItem :index="child.key" v-for="(child) in item.children" class="el-menu-item">
                     <Component :is="child.icon"></Component>
-                    <span>{{ child.title }}</span>
-                  </el-menu-item>
-                </el-sub-menu>
+                    <span :class="{title: child?.hasIcon}">{{ child.title }}</span>
+                  </ElMenuItem>
+                </ElSubMenu>
               </template>
               <template v-else>
-                <el-menu-item :index="item.key">
-                  <Component :is="item.icon"></Component>
-                  <template #title>{{ item.title }}</template>
-                </el-menu-item>
+                <ElMenuItem :index="item.key" class="el-menu-item">
+                  <template #title>
+                    <Component :is="item.icon"></Component>
+                    <span class="title">{{ item.title }}</span>
+                  </template>
+                </ElMenuItem>
               </template>
             </template>
-          </el-menu>
-        </el-scrollbar>
+          </ElMenu>
+        </ElScrollbar>
       </div>
       <div class="footer">
         <div class="collapse-box" @click="handleMenuCollapse">
@@ -359,21 +363,6 @@ const handleMenuCollapse = () => {
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
-
 .index-container {
   display: flex;
   width: 100%;
@@ -412,12 +401,20 @@ const handleMenuCollapse = () => {
   .menu {
     height: calc(100vh - 80px);
     padding-top: 14px;
-    overflow-y: auto;
+    overflow-y: unset;
     scrollbar-gutter: stable;
     scrollbar-color: #000B16 #1C1E23;
 
     .el-menu {
       border: none;
+
+      .title {
+        margin-left: 10px;
+      }
+    }
+
+    .el-menu-item {
+      height: 40px;
     }
   }
 
@@ -436,10 +433,18 @@ const handleMenuCollapse = () => {
       }
     }
   }
+}
 
-  .ant-menu-sub {
-    background: transparent !important;
-  }
+:deep(.el-menu-item) {
+  height: 45px;
+  line-height: 45px;
+  color: rgba(242, 242, 242, 0.8);
+}
+
+:deep(.el-sub-menu__title) {
+  height: 45px;
+  line-height: 45px;
+  color: rgba(242, 242, 242, 0.8);
 }
 
 /* WebKit 样式 */
@@ -459,61 +464,7 @@ const handleMenuCollapse = () => {
   background-color: #888;
 }
 
-/* Firefox 样式 */
-.menu {
-  scrollbar-width: none;
-  scrollbar-color: transparent transparent;
-}
-
-.menu:hover {
-  scrollbar-color: #888 transparent;
-}
-
-.ant-menu-item {
-  background: #1C1E23 !important;
-}
-
-.ant-menu-item-only-child {
-  background: #1C1E23 !important;
-}
-
-.ant-menu-dark {
-  background: #1C1E23;
-}
-
-.ant-menu-dark.ant-menu-inline {
-  background: #1C1E23;
-}
-
-.ant-menu-dark.ant-menu-inline {
-  background: #1C1E23;
-}
-
-.ant-menu {
-  background: #1C1E23 !important;
-}
-
-.ant-menu-sub.ant-menu-inline {
-  background: #1C1E23;
-}
-
-.ant-menu-dark.ant-menu-inline {
-  background: transparent !important;
-}
-
-/* 全局样式文件中添加 */
-.ant-menu-inline::-webkit-scrollbar {
-  width: 6px; /* 滚动条宽度 */
-  background: #f5f5f5; /* 轨道背景 */
-}
-
-.ant-menu-inline::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.3); /* 滑块颜色 */
-  border-radius: 3px;
-}
-
 /* 动画触发状态 */
-
 .left-sidebar.collapseLeft60 {
   flex: 0 0 60px;
 }
