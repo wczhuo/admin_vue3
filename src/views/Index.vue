@@ -113,9 +113,11 @@ const generateItems = (items?: any[]): any[] => {
 };
 
 const handleTabChange = (tab: any) => {
+  console.log('handleTabChange', router.options.routes);
   tabs.value.forEach((item: any) => {
     if (item.key === tab) {
       // 切换路由
+      console.log('handleTabChange', '切换路由', item.path);
       router.push(item.path);
     }
   });
@@ -213,16 +215,6 @@ const handleMenuCollapse = () => {
       </div>
       <div class="menu">
         <ElScrollbar>
-          <!--          <Menu v-if="false"-->
-          <!--                v-model:openKeys="menuOpenKeys"-->
-          <!--                v-model:selectedKeys="menuSelectedKeys"-->
-          <!--                style="width: 100%;"-->
-          <!--                mode="inline"-->
-          <!--                :theme="menuTheme"-->
-          <!--                :items="menuItems.value"-->
-          <!--                @click="handleMenuItem"-->
-          <!--                :inlineIndent="16"-->
-          <!--          />-->
           <ElMenu
               default-active="2"
               class="el-menu-vertical-demo el-menu"
@@ -355,7 +347,11 @@ const handleMenuCollapse = () => {
           </Tabs>
         </div>
         <div class="router-view">
-          <router-view/>
+            <router-view :key="getCurrentRoute().route" v-slot="{ Component }">
+              <keep-alive>
+                <component :is="Component" />
+              </keep-alive>
+            </router-view>
         </div>
       </div>
     </div>

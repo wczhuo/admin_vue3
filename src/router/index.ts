@@ -66,6 +66,7 @@ export const addDynamicRoutes = (routes: any) => {
             children: route.children || [] // 支持嵌套路由
         });
     });
+    // console.log('addDynamicRoutes', router.getRoutes());
 
     // 添加404兜底路由（需放在最后）
     router.addRoute({
@@ -80,6 +81,8 @@ const generateRoutes = async () => {
         menus.value = await getAllMenus();
         // console.log('generateRoutes menus', menus);
         generateRouterItems(menus.value);
+        // 添加动态路由
+        // console.log('添加动态路由');
         addDynamicRoutes(routesApi.value);
 
         return menus.value;
