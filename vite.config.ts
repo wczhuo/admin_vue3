@@ -1,8 +1,8 @@
 import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path';
-import Components from 'unplugin-vue-components/vite';
-import RadixVueResolver from 'radix-vue/resolver';
+// import Components from 'unplugin-vue-components/vite';
+// import RadixVueResolver from 'radix-vue/resolver';
 
 // 在控制台输出
 // console.log('__dirname', __dirname);
@@ -17,6 +17,11 @@ export default defineConfig(({mode}) => ({
     ],
 
     server: {
+        hmr: {
+            // 当 HTML 文件变化时强制刷新页面
+            overlay: false,
+        },
+
         port: 3000, // 自己规定的端口号
 
         proxy: mode === 'production' ? {} : {

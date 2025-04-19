@@ -58,6 +58,7 @@ const generateRouterItems = (items?: any[]): any[] => {
 
 export const addDynamicRoutes = (routes: any) => {
     routes.forEach((route: any) => {
+        // console.log('route.path', route.path);
         router.addRoute('Index123', {
             path: route.path,
             name: route.name,
@@ -86,8 +87,14 @@ const generateRoutes = async () => {
         addDynamicRoutes(routesApi.value);
 
         return menus.value;
+    } else {
+        // 添加动态路由
+        // console.log('添加动态路由');
+        addDynamicRoutes(routesApi.value);
+
+        return menus.value;
     }
-    return menus.value;
+    // return menus.value;
 }
 
 // 定义路由类型增强安全性
@@ -121,7 +128,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, __from, next) => {
-    const isAuthenticated = localStorage.getItem('token');
+    const isAuthenticated = isLogin();
 
     if (to.meta.requiresAuth && !isAuthenticated) {
         // 保存原始路径用于登录后跳转

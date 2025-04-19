@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, h, onBeforeMount} from 'vue';
+import {ref, h, onBeforeMount, watch} from 'vue';
 import {Tabs, TabPane, Breadcrumb, BreadcrumbItem, Space, Avatar, Dropdown, message} from 'ant-design-vue';
 import {ElScrollbar, ElMenu, ElSubMenu, ElMenuItem} from 'element-plus';
 import {generateRoutes} from "@/router";
@@ -8,14 +8,36 @@ import {getInitData} from "@/api/core/site.ts";
 import {getSiteInfo, setSiteInfo} from "@/utils/tools.ts";
 import Icon from "@/components/Icon.vue";
 import {getUserInfoApi, logoutApi, setUserInfo, userInfo} from "@/api/core/auth.ts";
+import {useRoute} from 'vue-router';
+
+const route = useRoute();
+
+// 监听 fullPath 变化
+watch(
+    () => route.fullPath,
+    (newPath) => {
+      console.log('路由已更新:', newPath);
+    }
+);
 
 // 主题
 const menuSelectedKeys = ref(<any>[]);
 const storeName = ref<string>();
 const menus: any = ref([]);
 const menuItems: any = ref([]);
+// 当前的路由信息
 const currentRoute: any = ref({});
 const showIndexContainer = ref(false);
+
+const routerPush = async (path: string, __params: any = {}) => {
+  // router.push({path, params});
+  currentRoute.value.route = path;
+  await router.push(path).then(() => console.log('导航成功'))
+      .catch(err => {
+        // 处理导航错误
+        console.log('err', err);
+      });
+}
 
 // 选项卡，最后一个选项卡不允许关闭
 const setTabs = () => {
@@ -87,7 +109,7 @@ onBeforeMount(async () => {
   currentRoute.value = getCurrentRoute();
 
   // 跳转路由
-  await router.push(currentRoute.value.route);
+  await routerPush(currentRoute.value.route);
   // 设置激活的菜单项和选项卡
   activeTabKey.value = currentRoute.value.key;
   activeMenuKey.value = currentRoute.value.key;
@@ -117,8 +139,8 @@ const handleTabChange = (tab: any) => {
   tabs.value.forEach((item: any) => {
     if (item.key === tab) {
       // 切换路由
-      console.log('handleTabChange', '切换路由', item.path);
-      router.push(item.path);
+      console.log('handleTabChange', '切换路由', item.path, router.getRoutes());
+      routerPush(item.path);
     }
   });
 }
@@ -130,7 +152,7 @@ const logout = () => {
     localStorage.removeItem('userInfo');
   }).finally(() => {
     hide();
-    router.push('/login');
+    routerPush('/login');
   });
 }
 // 获取登录管理员信息
@@ -161,7 +183,7 @@ const handleMenuItem = (item: any) => {
   activeTabKey.value = menuItem.id;
   activeMenuKey.value = menuItem.id;
   // 路由跳转
-  router.push(menuItem.path);
+  routerPush(menuItem.path);
 }
 // 获取站点基础信息
 const siteInfo = ref<any>(getSiteInfo());
@@ -178,7 +200,7 @@ const handleTabEdit = (val: any, option: any) => {
         // 保存tabs
         setTabs();
         // 切换路由
-        router.push(tabs.value[Math.max(index - 1, 0)].path);
+        routerPush(tabs.value[Math.max(index - 1, 0)].path);
         // 切换菜单激活项
         menuSelectedKeys.value = [tabs.value[Math.max(index - 1, 0)].key];
       }
@@ -345,13 +367,14 @@ const handleMenuCollapse = () => {
             <TabPane v-for="item in tabs" :key="item.key" :tab="item.tab" :closable="tabs && tabs.length > 1">
             </TabPane>
           </Tabs>
+          {{ currentRoute.route }}{{ route.fullPath }}
         </div>
         <div class="router-view">
-            <router-view :key="getCurrentRoute().route" v-slot="{ Component }">
-              <keep-alive>
-                <component :is="Component" />
-              </keep-alive>
-            </router-view>
+          <RouterView :key="currentRoute.route" v-slot="{ Component }">
+            <KeepAlive>
+              <Component :is="Component"/>
+            </KeepAlive>
+          </RouterView>
         </div>
       </div>
     </div>
