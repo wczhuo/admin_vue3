@@ -371,9 +371,11 @@ const handleMenuCollapse = () => {
         </div>
         <div class="router-view">
           <RouterView :key="currentRoute.route" v-slot="{ Component }">
-            <KeepAlive>
-              <Component :is="Component"/>
-            </KeepAlive>
+            <transition name="fade">
+              <KeepAlive>
+                <Component :is="Component"/>
+              </KeepAlive>
+            </transition>
           </RouterView>
         </div>
       </div>

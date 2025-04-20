@@ -22,7 +22,8 @@ import 'vxe-table/lib/style.css'
 //     prefixCls: 'Antd'
 // });
 
-// 加载动态路由
+// 加载动态路由，如果刷新的页面是动态路由，例如：http://localhost:3000/dashboard/workbench
+// 如果不在这里加载路由，则会提示找不到路由
 await generateRoutes();
 
 const app = createApp(App);

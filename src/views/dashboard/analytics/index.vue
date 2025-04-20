@@ -68,7 +68,7 @@ const schema: any = [
 
 <template>
   <Form :schema="schema">
-    <template #ACTION>123123</template>
+    <template #ACTION>123123123123</template>
   </Form>
 </template>
 

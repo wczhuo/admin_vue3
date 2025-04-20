@@ -77,6 +77,10 @@ export const addDynamicRoutes = (routes: any) => {
 };
 
 const generateRoutes = async () => {
+    if (router.getRoutes().length > 3) {
+        console.log('generateRoutes 123');
+        return menus.value;
+    }
     // console.log('routesApi.value', routesApi.value);
     if (routesApi.value.length == 0) {
         menus.value = await getAllMenus();
@@ -131,8 +135,13 @@ const router = createRouter({
     routes
 });
 
-router.beforeEach((to, __from, next) => {
+router.beforeEach(async (to, __from, next) => {
     const isAuthenticated = isLogin();
+
+    if (isAuthenticated) {
+        console.log('添加动态路由 12123');
+        await generateRoutes();
+    }
 
     if (to.meta.requiresAuth && !isAuthenticated) {
         // 保存原始路径用于登录后跳转

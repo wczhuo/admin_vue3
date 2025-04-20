@@ -19,7 +19,7 @@ export default defineConfig(({mode}) => ({
     server: {
         hmr: {
             // 当 HTML 文件变化时强制刷新页面
-            overlay: false,
+            overlay: true,
         },
 
         port: 3000, // 自己规定的端口号
