@@ -116,7 +116,7 @@ const routes: Array<RouteRecordRaw> = [
         // children: [...routesApi.value],
         children: [
             {
-                path: '/dashboard/analysis',
+                path: 'dashboard/analysis',
                 name: 'DashboardAnalysis',
                 component: () => import('@/views/dashboard/analytics/index.vue'), // 懒加载
                 meta: {requiresAuth: true}, // 添加路由元信息
