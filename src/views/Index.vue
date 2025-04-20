@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, h, onBeforeMount, watch} from 'vue';
+import {ref, h, onMounted, watch} from 'vue';
 import {Tabs, TabPane, Breadcrumb, BreadcrumbItem, Space, Avatar, Dropdown, message} from 'ant-design-vue';
 import {ElScrollbar, ElMenu, ElSubMenu, ElMenuItem} from 'element-plus';
 import {generateRoutes} from "@/router";
@@ -94,7 +94,7 @@ const generateBreadcrumbMap = (items?: any[], map?: any[]): void => {
       }
   );
 };
-onBeforeMount(async () => {
+onMounted(async () => {
   // 生成路由并返回菜单
   menus.value = await generateRoutes();
 

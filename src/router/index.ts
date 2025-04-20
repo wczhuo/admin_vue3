@@ -1,5 +1,5 @@
 // src/router/index.ts
-import {createRouter, createWebHistory, type RouteRecordRaw} from 'vue-router'
+import {createRouter, createWebHistory, createWebHashHistory, type RouteRecordRaw} from 'vue-router'
 import {getAllMenusApi} from "@/api/core/menu.ts";
 import {isLogin} from "@/api/core/auth.ts";
 import {ConfigProvider, message} from 'ant-design-vue';
@@ -83,13 +83,13 @@ const generateRoutes = async () => {
         // console.log('generateRoutes menus', menus);
         generateRouterItems(menus.value);
         // 添加动态路由
-        // console.log('添加动态路由');
+        console.log('添加动态路由 1');
         addDynamicRoutes(routesApi.value);
 
         return menus.value;
     } else {
         // 添加动态路由
-        // console.log('添加动态路由');
+        console.log('添加动态路由 2');
         addDynamicRoutes(routesApi.value);
 
         return menus.value;
@@ -123,7 +123,11 @@ const routes: Array<RouteRecordRaw> = [
 // console.log('routes', routes);
 
 const router = createRouter({
-    history: createWebHistory(),
+    history:
+        import.meta.env.VITE_ROUTER_HISTORY === 'hash'
+            ? createWebHashHistory(import.meta.env.VITE_BASE)
+            : createWebHistory(import.meta.env.VITE_BASE),
+    // 应该添加到路由的初始路由列表。
     routes
 });
 
