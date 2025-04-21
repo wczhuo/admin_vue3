@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import Form from '@/components/Form.vue';
 
+defineOptions({name: 'Analytics'});
+
 const schema: any = [
   {
     fieldName: 'id',
@@ -68,7 +70,7 @@ const schema: any = [
 
 <template>
   <Form :schema="schema">
-    <template #ACTION>123123123123</template>
+    <template #ACTION>345</template>
   </Form>
 </template>
 

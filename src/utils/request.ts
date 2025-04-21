@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const request = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL, // 环境变量配置后端地址
-    timeout: 10000, // 超时时间
+    timeout: 30000, // 超时时间
     headers: {
         'Content-Type': 'application/json',
         'Store-Id': localStorage.getItem('currentStoreId')

@@ -8,6 +8,8 @@ import {Icon} from '@iconify/vue';
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'    // 引入默认样式
 
+// import Antd from 'ant-design-vue';
+
 // ...
 import VxeUI from 'vxe-pc-ui'
 import 'vxe-pc-ui/lib/style.css'
@@ -31,5 +33,7 @@ const app = createApp(App);
 app.component('iconify-icon', Icon);
 
 app.use(ElementPlus);
+// app.use(Antd);
+app.config.devtools = true; // 强制启用 DevTools
 
 app.use(router).use(VxeUI).use(VxeUITable).mount('#app');

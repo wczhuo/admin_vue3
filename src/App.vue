@@ -22,7 +22,9 @@ VxeUI.setTheme('dark');
       <!-- 动态渲染当前路由组件 -->
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
-          <component :is="Component"/>
+          <KeepAlive>
+            <component :is="Component"/>
+          </KeepAlive>
         </transition>
       </router-view>
     </App>

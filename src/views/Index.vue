@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, h, onMounted, watch} from 'vue';
+import {ref, h, onMounted} from 'vue';
 import {Tabs, TabPane, Breadcrumb, BreadcrumbItem, Space, Avatar, Dropdown, message} from 'ant-design-vue';
 import {ElScrollbar, ElMenu, ElSubMenu, ElMenuItem} from 'element-plus';
 import {getAllMenus} from "@/router";
@@ -19,6 +19,7 @@ const currentRoute: any = ref({});
 const showIndexContainer = ref(false);
 
 const routerPush = async (path: string, __params: any = {}) => {
+  console.log('路由跳转', path, __params, router.getRoutes());
   currentRoute.value.route = path;
   await router.push(path);
 }
@@ -80,6 +81,8 @@ const generateBreadcrumbMap = (items?: any[], map?: any[]): void => {
 };
 onMounted(async () => {
   // 生成路由并返回菜单
+  // menus.value = await generateRoutes();
+
   menus.value = await getAllMenus();
   // 显示容器
   showIndexContainer.value = true;
@@ -91,6 +94,7 @@ onMounted(async () => {
   currentRoute.value = getCurrentRoute();
 
   // 跳转路由
+  console.log('跳转路由 onMounted');
   await routerPush(currentRoute.value.route);
   // 设置激活的菜单项和选项卡
   activeTabKey.value = currentRoute.value.key;
@@ -352,7 +356,7 @@ const handleMenuCollapse = () => {
           <RouterView v-slot="{ Component, route }">
             <Transition appear mode="out-in" name="slide-right">
               <KeepAlive>
-                <component :is="Component" :key="route.path"/>
+                <component :is="Component" :key="route.fullPath"/>
               </KeepAlive>
             </transition>
           </RouterView>

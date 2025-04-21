@@ -85,6 +85,7 @@ const generateRoutes = async () => {
         generateRouterItems(menus.value);
     }
     // 添加动态路由
+    console.log('添加动态路由');
     addDynamicRoutes(routesApi.value);
 
     return menus.value;
@@ -126,9 +127,11 @@ const router = createRouter({
 router.beforeEach(async (to, __from, next) => {
     const isAuthenticated = isLogin();
 
+    console.log('router.beforeEach');
     // 登录状态下，加载动态路由
     // 登录后，会提示路由不存在
     if (isAuthenticated) {
+        console.log('isAuthenticated');
         await generateRoutes();
     }
 
