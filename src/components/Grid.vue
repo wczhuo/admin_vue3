@@ -2,6 +2,7 @@
 import {ref} from 'vue'
 import FormSearch from "@/components/FormSearch.vue";
 import FormSchema from "@/components/FormSchema.vue";
+import type { VxeGridProps } from 'vxe-table';
 
 const props = defineProps({
   loading: {
@@ -15,6 +16,17 @@ const props = defineProps({
       wrapperCol: {span: 16},
       labelCol: {span: 8},
       showCollapseButton: false,
+    }),
+  },
+  gridOptions: {
+    type: Object,
+    default: () => ({
+      toolbarConfig: {
+        print: true,
+        zoom: true,
+        export: true,
+        refresh: true,
+      },
     }),
   },
   schema: {
@@ -60,6 +72,7 @@ const tableData = ref<RowVO[]>([
 ])
 
 console.log('props.formConfig', props.formConfig);
+console.log('props.gridOptions', props.gridOptions);
 </script>
 
 <template>
@@ -70,7 +83,8 @@ console.log('props.formConfig', props.formConfig);
     </div>
     <div class="w-full divider"></div>
     <div class="table-container">
-      <vxe-table :data="tableData">
+      <vxe-toolbar ref="toolbarRef" v-bind="gridOptions.toolbarConfig"></vxe-toolbar>
+      <vxe-table :data="tableData" v-bind="gridOptions">
         <vxe-column type="seq" width="70"></vxe-column>
         <vxe-column field="name" title="Name"></vxe-column>
         <vxe-column field="sex" title="Sex"></vxe-column>

@@ -634,7 +634,7 @@ const handleMenuCollapse = () => {
   margin-right: 5px;
 
   .full-screen-icon {
-    padding: 7px;
+    margin: 7px;
   }
 }
 
