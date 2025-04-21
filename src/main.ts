@@ -33,7 +33,9 @@ const app = createApp(App);
 app.component('iconify-icon', Icon);
 
 app.use(ElementPlus);
+// 全局注册antdv控件
 // app.use(Antd);
-app.config.devtools = true; // 强制启用 DevTools
+// 强制启用 DevTools
+// app.config.devtools = true;
 
 app.use(router).use(VxeUI).use(VxeUITable).mount('#app');
