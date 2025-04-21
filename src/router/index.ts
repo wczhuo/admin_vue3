@@ -58,16 +58,14 @@ const generateRouterItems = (items?: any[]): any[] => {
 
 export const addDynamicRoutes = (routes: any) => {
     routes.forEach((route: any) => {
-        // console.log('route.path', route.path);
         router.addRoute('Index123', {
             path: route.path,
             name: route.name,
             component: route.component,
-            meta: {requiresAuth: true},
+            meta: {requiresAuth: true, keepAlive: true},
             children: route.children || [] // 支持嵌套路由
         });
     });
-    // console.log('addDynamicRoutes', router.getRoutes());
 
     // 添加404兜底路由（需放在最后）
     router.addRoute({
@@ -78,27 +76,21 @@ export const addDynamicRoutes = (routes: any) => {
 
 const generateRoutes = async () => {
     if (router.getRoutes().length > 3) {
-        console.log('generateRoutes 123');
         return menus.value;
     }
-    // console.log('routesApi.value', routesApi.value);
     if (routesApi.value.length == 0) {
         menus.value = await getAllMenus();
-        // console.log('generateRoutes menus', menus);
         generateRouterItems(menus.value);
         // 添加动态路由
-        console.log('添加动态路由 1');
         addDynamicRoutes(routesApi.value);
 
         return menus.value;
     } else {
         // 添加动态路由
-        console.log('添加动态路由 2');
         addDynamicRoutes(routesApi.value);
 
         return menus.value;
     }
-    // return menus.value;
 }
 
 // 定义路由类型增强安全性
@@ -124,7 +116,6 @@ const routes: Array<RouteRecordRaw> = [
         ],
     }
 ]
-// console.log('routes', routes);
 
 const router = createRouter({
     history:
@@ -139,11 +130,10 @@ router.beforeEach(async (to, __from, next) => {
     const isAuthenticated = isLogin();
 
     if (isAuthenticated) {
-        console.log('添加动态路由 12123');
         await generateRoutes();
     }
 
-    if (to.meta.requiresAuth && !isAuthenticated) {
+    if ((to.meta.requiresAuth || to.meta.requiresAuth === undefined) && !isAuthenticated && to.path != '/login') {
         // 保存原始路径用于登录后跳转
         localStorage.setItem('redirectPath', to.fullPath)
         next('/login')
@@ -151,8 +141,6 @@ router.beforeEach(async (to, __from, next) => {
         next();
     }
 })
-
-// const router = await generateRoutes();
 
 export {getAllMenus, generateRoutes};
 export default router

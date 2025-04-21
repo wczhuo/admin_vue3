@@ -1,33 +1,4 @@
-<template>
-  <div class="slide-verify">
-    <!-- 验证提示文字 -->
-<!--    <div class="verify-tips">{{ tipsText }}</div>-->
-
-    <!-- 滑动轨道 -->
-    <div
-        class="verify-track"
-        ref="track"
-        @mousemove="handleMove"
-        @mouseup="handleEnd"
-        @mouseleave="handleEnd"
-    >
-      <!-- 滑动块 -->
-      <div
-          class="verify-thumb"
-          :style="{ left: thumbLeft + 'px' }"
-          @mousedown="handleStart"
-      >
-        <RightOutlined v-if="verifySuccess" class="success-icon"/>
-        <DragOutlined v-else class="drag-icon"/>
-      </div>
-
-      <!-- 背景文字 -->
-      <div class="track-text" :class="{active: verifySuccess, warning: warning}">{{ verifySuccess ? '验证通过' : '请按住滑块，拖动到最右边' }}</div>
-    </div>
-  </div>
-</template>
-
-<script setup>
+<script setup lang="ts">
 import {ref, onMounted} from 'vue';
 import {RightOutlined, DragOutlined} from '@ant-design/icons-vue';
 
@@ -49,7 +20,7 @@ const thumbLeft = ref(0);
 const isDragging = ref(false);
 const verifySuccess = ref(false);
 const trackWidth = ref(0);
-const track = ref(null);
+const track = ref(<any>null);
 
 // 初始化轨道宽度
 onMounted(() => {
@@ -63,7 +34,7 @@ const handleStart = () => {
   }
 };
 
-const handleMove = (e) => {
+const handleMove = (e: any) => {
   if (!isDragging.value || verifySuccess.value) return;
 
   const rect = track.value.getBoundingClientRect();
@@ -102,10 +73,39 @@ const reset = () => {
 defineExpose({reset});
 </script>
 
+<template>
+  <div class="slide-verify">
+    <!-- 验证提示文字 -->
+<!--    <div class="verify-tips">{{ tipsText }}</div>-->
+
+    <!-- 滑动轨道 -->
+    <div
+        class="verify-track"
+        ref="track"
+        @mousemove="handleMove"
+        @mouseup="handleEnd"
+        @mouseleave="handleEnd"
+    >
+      <!-- 滑动块 -->
+      <div
+          class="verify-thumb"
+          :style="{ left: thumbLeft + 'px' }"
+          @mousedown="handleStart"
+      >
+        <RightOutlined v-if="verifySuccess" class="success-icon"/>
+        <DragOutlined v-else class="drag-icon"/>
+      </div>
+
+      <!-- 背景文字 -->
+      <div class="track-text" :class="{active: verifySuccess, warning: warning}">{{ verifySuccess ? '验证通过' : '请按住滑块，拖动到最右边' }}</div>
+    </div>
+  </div>
+</template>
+
 <style scoped>
 .slide-verify {
   width: 100%;
-  padding: 0px 0;
+  padding: 0;
   user-select: none;
 }
 

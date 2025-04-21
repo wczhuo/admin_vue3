@@ -2,8 +2,8 @@
 import {useTemplateRef, ref} from 'vue';
 import {Form, FormItem, Input, Button, message, Spin} from 'ant-design-vue';
 import {loginApi} from "@/api/core/auth.ts";
-import router, {generateRoutes} from "@/router";
-import SlideVerify from "@/components/SlideVerify.vue";
+import router from "@/router";
+import SlideVerify from '@/components/SlideVerify.vue';
 import {getInitData} from "@/api/core/site.ts";
 import {getSiteInfo, setSiteInfo} from "@/utils/tools.ts";
 
@@ -65,7 +65,6 @@ const handleLogin = async () => {
     localStorage.setItem('token', result?.result?.token);
     localStorage.setItem('userInfo', JSON.stringify(result?.result));
     // 加载路由和菜单
-    await generateRoutes();
     router.push('/');
     // router.push('/index');
   } else {

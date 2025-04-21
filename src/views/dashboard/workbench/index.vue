@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import Grid from "@/components/Grid.vue";
 
+defineOptions({name: 'Workbench'});
+
 const schema: any = [
   {
     fieldName: 'id',

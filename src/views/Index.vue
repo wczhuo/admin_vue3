@@ -2,7 +2,7 @@
 import {ref, h, onMounted, watch} from 'vue';
 import {Tabs, TabPane, Breadcrumb, BreadcrumbItem, Space, Avatar, Dropdown, message} from 'ant-design-vue';
 import {ElScrollbar, ElMenu, ElSubMenu, ElMenuItem} from 'element-plus';
-import {generateRoutes} from "@/router";
+import {generateRoutes, getAllMenus} from "@/router";
 import router from "@/router";
 import {getInitData} from "@/api/core/site.ts";
 import {getSiteInfo, setSiteInfo} from "@/utils/tools.ts";
@@ -32,11 +32,7 @@ const showIndexContainer = ref(false);
 const routerPush = async (path: string, __params: any = {}) => {
   // router.push({path, params});
   currentRoute.value.route = path;
-  await router.push(path).then(() => console.log('导航成功'))
-      .catch(err => {
-        // 处理导航错误
-        console.log('err', err);
-      });
+  await router.push(path);
 }
 
 // 选项卡，最后一个选项卡不允许关闭
@@ -96,9 +92,7 @@ const generateBreadcrumbMap = (items?: any[], map?: any[]): void => {
 };
 onMounted(async () => {
   // 生成路由并返回菜单
-  menus.value = await generateRoutes();
-
-  // menus.value = await getAllMenus();
+  menus.value = await getAllMenus();
   // 显示容器
   showIndexContainer.value = true;
   // 生成面包屑映射，路由id->面包屑数组
@@ -135,11 +129,9 @@ const generateItems = (items?: any[]): any[] => {
 };
 
 const handleTabChange = (tab: any) => {
-  console.log('handleTabChange', router.options.routes);
   tabs.value.forEach((item: any) => {
     if (item.key === tab) {
       // 切换路由
-      console.log('handleTabChange', '切换路由', item.path, router.getRoutes());
       routerPush(item.path);
     }
   });
@@ -367,13 +359,12 @@ const handleMenuCollapse = () => {
             <TabPane v-for="item in tabs" :key="item.key" :tab="item.tab" :closable="tabs && tabs.length > 1">
             </TabPane>
           </Tabs>
-          {{ currentRoute.route }}{{ route.fullPath }}
         </div>
         <div class="router-view">
-          <RouterView :key="currentRoute.route" v-slot="{ Component }">
-            <transition name="fade">
+          <RouterView v-slot="{ Component, route }">
+            <Transition appear mode="out-in" name="slide-right">
               <KeepAlive>
-                <Component :is="Component"/>
+                <component :is="Component" :key="route.path"/>
               </KeepAlive>
             </transition>
           </RouterView>
