@@ -26,6 +26,7 @@ import 'vxe-table/lib/style.css'
 
 // 加载动态路由，如果刷新的页面是动态路由，例如：http://localhost:3000/dashboard/workbench
 // 如果不在这里加载路由，则会提示找不到路由
+// TODO：修改index.vue中的html代码，引起的热重载会使路由push失效
 await generateRoutes();
 
 const app = createApp(App);
