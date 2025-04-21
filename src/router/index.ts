@@ -128,9 +128,9 @@ router.beforeEach(async (to, __from, next) => {
 
     // 登录状态下，加载动态路由
     // 登录后，会提示路由不存在
-    // if (isAuthenticated) {
-    //     await generateRoutes();
-    // }
+    if (isAuthenticated) {
+        await generateRoutes();
+    }
 
     if ((to.meta.requiresAuth || to.meta.requiresAuth === undefined) && !isAuthenticated && to.path != '/login') {
         // 保存原始路径用于登录后跳转

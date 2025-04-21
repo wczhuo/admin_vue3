@@ -8,17 +8,6 @@ import {getInitData} from "@/api/core/site.ts";
 import {getSiteInfo, setSiteInfo} from "@/utils/tools.ts";
 import Icon from "@/components/Icon.vue";
 import {getUserInfoApi, logoutApi, setUserInfo, userInfo} from "@/api/core/auth.ts";
-import {useRoute} from 'vue-router';
-
-const route = useRoute();
-
-// 监听 fullPath 变化
-watch(
-    () => route.fullPath,
-    (newPath) => {
-      console.log('路由已更新:', newPath);
-    }
-);
 
 // 主题
 const menuSelectedKeys = ref(<any>[]);
