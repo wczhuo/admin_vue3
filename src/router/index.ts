@@ -79,18 +79,15 @@ const generateRoutes = async () => {
         return menus.value;
     }
     if (routesApi.value.length == 0) {
+        // 获取菜单
         menus.value = await getAllMenus();
+        // 生成路由列表
         generateRouterItems(menus.value);
-        // 添加动态路由
-        addDynamicRoutes(routesApi.value);
-
-        return menus.value;
-    } else {
-        // 添加动态路由
-        addDynamicRoutes(routesApi.value);
-
-        return menus.value;
     }
+    // 添加动态路由
+    addDynamicRoutes(routesApi.value);
+
+    return menus.value;
 }
 
 // 定义路由类型增强安全性
@@ -129,9 +126,11 @@ const router = createRouter({
 router.beforeEach(async (to, __from, next) => {
     const isAuthenticated = isLogin();
 
-    if (isAuthenticated) {
-        await generateRoutes();
-    }
+    // 登录状态下，加载动态路由
+    // 登录后，会提示路由不存在
+    // if (isAuthenticated) {
+    //     await generateRoutes();
+    // }
 
     if ((to.meta.requiresAuth || to.meta.requiresAuth === undefined) && !isAuthenticated && to.path != '/login') {
         // 保存原始路径用于登录后跳转
@@ -141,6 +140,12 @@ router.beforeEach(async (to, __from, next) => {
         next();
     }
 })
+
+// 登录状态下，加载动态路由
+// 登录后，会提示路由不存在
+// if (isLogin()) {
+//     await generateRoutes();
+// }
 
 export {getAllMenus, generateRoutes};
 export default router

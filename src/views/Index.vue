@@ -2,7 +2,7 @@
 import {ref, h, onMounted, watch} from 'vue';
 import {Tabs, TabPane, Breadcrumb, BreadcrumbItem, Space, Avatar, Dropdown, message} from 'ant-design-vue';
 import {ElScrollbar, ElMenu, ElSubMenu, ElMenuItem} from 'element-plus';
-import {generateRoutes, getAllMenus} from "@/router";
+import {getAllMenus} from "@/router";
 import router from "@/router";
 import {getInitData} from "@/api/core/site.ts";
 import {getSiteInfo, setSiteInfo} from "@/utils/tools.ts";
@@ -30,7 +30,6 @@ const currentRoute: any = ref({});
 const showIndexContainer = ref(false);
 
 const routerPush = async (path: string, __params: any = {}) => {
-  // router.push({path, params});
   currentRoute.value.route = path;
   await router.push(path);
 }
